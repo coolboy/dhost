@@ -1,7 +1,7 @@
 /**
  * 
  */
-package gui;
+package dhost.ui;
 
 /**
  * @author Cool

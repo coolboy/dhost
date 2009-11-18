@@ -4,7 +4,7 @@
  * Created on __DATE__, __TIME__
  */
 
-package gui;
+package dhost.ui;
 
 /**
  *
