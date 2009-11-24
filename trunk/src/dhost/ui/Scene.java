@@ -6,6 +6,10 @@
 
 package dhost.ui;
 
+import java.lang.System;
+
+;
+
 /**
  *
  * @author  __USER__
@@ -27,7 +31,7 @@ public class Scene extends javax.swing.JFrame {
 	private void initComponents() {
 
 		SceneP = new javax.swing.JScrollPane();
-		OutPutTF = new javax.swing.JTextField();
+		OutputTF = new javax.swing.JTextField();
 		MenuBar = new javax.swing.JMenuBar();
 		FileM = new javax.swing.JMenu();
 		ConnectMI = new javax.swing.JMenuItem();
@@ -43,23 +47,33 @@ public class Scene extends javax.swing.JFrame {
 		getContentPane().setLayout(new java.awt.GridLayout(0, 1));
 		getContentPane().add(SceneP);
 
-		OutPutTF.setText("OutPut");
-		OutPutTF.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				OutPutTFActionPerformed(evt);
-			}
-		});
-		getContentPane().add(OutPutTF);
+		OutputTF.setText("Ready");
+		getContentPane().add(OutputTF);
 
 		FileM.setText("File");
 
 		ConnectMI.setText("Connect");
+		ConnectMI.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				ConnectMIActionPerformed(evt);
+			}
+		});
 		FileM.add(ConnectMI);
 
 		StartMI.setText("Start");
+		StartMI.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				StartMIActionPerformed(evt);
+			}
+		});
 		FileM.add(StartMI);
 
 		ExitMI.setText("Exit");
+		ExitMI.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				ExitMIActionPerformed(evt);
+			}
+		});
 		FileM.add(ExitMI);
 
 		MenuBar.add(FileM);
@@ -67,6 +81,11 @@ public class Scene extends javax.swing.JFrame {
 		HelpM.setText("Help");
 
 		About.setText("About");
+		About.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				AboutActionPerformed(evt);
+			}
+		});
 		HelpM.add(About);
 
 		MenuBar.add(HelpM);
@@ -77,8 +96,20 @@ public class Scene extends javax.swing.JFrame {
 	}// </editor-fold>
 	//GEN-END:initComponents
 
-	private void OutPutTFActionPerformed(java.awt.event.ActionEvent evt) {
+	private void StartMIActionPerformed(java.awt.event.ActionEvent evt) {
 		// TODO add your handling code here:
+	}
+
+	private void AboutActionPerformed(java.awt.event.ActionEvent evt) {
+		abtDlg.setVisible(true);
+	}
+
+	private void ExitMIActionPerformed(java.awt.event.ActionEvent evt) {
+		System.exit(0);
+	}
+
+	private void ConnectMIActionPerformed(java.awt.event.ActionEvent evt) {
+		connDlg.setVisible(true);
 	}
 
 	/**
@@ -100,9 +131,11 @@ public class Scene extends javax.swing.JFrame {
 	private javax.swing.JMenu FileM;
 	private javax.swing.JMenu HelpM;
 	private javax.swing.JMenuBar MenuBar;
-	private javax.swing.JTextField OutPutTF;
+	private javax.swing.JTextField OutputTF;
 	private javax.swing.JScrollPane SceneP;
 	private javax.swing.JMenuItem StartMI;
 	// End of variables declaration//GEN-END:variables
 
+	private ConnectDlg connDlg = new ConnectDlg(this, true);
+	private AboutDlg abtDlg = new AboutDlg(this, true);
 }
