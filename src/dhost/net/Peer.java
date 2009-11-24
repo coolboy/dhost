@@ -8,9 +8,9 @@ public class Peer implements Comparable<Peer>
 	private Integer peerID;
 	private int portNumber;
 	InetAddress InetAddr;
-	//variable for bandwidth score? latency score? hardware score?
+	// variable for bandwidth score? latency score? hardware score?
 
-	//construct peer on just an IP address, in string form
+	// construct peer on just an IP address, in string form
 	public Peer(String peerIPAddr) throws UnknownHostException
 	{
 		InetAddr = InetAddress.getByName(peerIPAddr);
@@ -18,7 +18,7 @@ public class Peer implements Comparable<Peer>
 		peerID = new Integer(-1);
 	}
 
-	//construct on IP, ID...
+	// construct on IP, ID...
 	public Peer(String peerIPAddr, int id) throws UnknownHostException
 	{
 		InetAddr = InetAddress.getByName(peerIPAddr);
@@ -26,7 +26,7 @@ public class Peer implements Comparable<Peer>
 		portNumber = defaultPort;
 	}
 
-	//construct on IP, port, and ID
+	// construct on IP, port, and ID
 	public Peer(String peerIPAddr, int id, int port) throws UnknownHostException
 	{
 		InetAddr = InetAddress.getByName(peerIPAddr);
