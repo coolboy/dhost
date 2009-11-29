@@ -30,7 +30,7 @@ public class Scene extends javax.swing.JFrame {
 	// <editor-fold defaultstate="collapsed" desc="Generated Code">
 	private void initComponents() {
 
-		SceneP = new javax.swing.JScrollPane();
+		canvas1 = new dhost.ui.Canvas();
 		OutputTF = new javax.swing.JTextField();
 		MenuBar = new javax.swing.JMenuBar();
 		FileM = new javax.swing.JMenu();
@@ -45,7 +45,7 @@ public class Scene extends javax.swing.JFrame {
 		setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 		setMinimumSize(new java.awt.Dimension(640, 480));
 		getContentPane().setLayout(new java.awt.GridLayout(0, 1));
-		getContentPane().add(SceneP);
+		getContentPane().add(canvas1);
 
 		OutputTF.setText("Ready");
 		getContentPane().add(OutputTF);
@@ -132,8 +132,8 @@ public class Scene extends javax.swing.JFrame {
 	private javax.swing.JMenu HelpM;
 	private javax.swing.JMenuBar MenuBar;
 	private javax.swing.JTextField OutputTF;
-	private javax.swing.JScrollPane SceneP;
 	private javax.swing.JMenuItem StartMI;
+	private dhost.ui.Canvas canvas1;
 	// End of variables declaration//GEN-END:variables
 
 	private ConnectDlg connDlg = new ConnectDlg(this, true);

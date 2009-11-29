@@ -83,9 +83,7 @@
     <Property name="rows" type="int" value="0"/>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JScrollPane" name="SceneP">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+    <Container class="dhost.ui.Canvas" name="canvas">
     </Container>
     <Component class="javax.swing.JTextField" name="OutputTF">
       <Properties>
