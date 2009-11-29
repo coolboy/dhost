@@ -42,7 +42,7 @@ public class AboutDlg extends javax.swing.JDialog {
 				.setText("<html><p>Chris</p><p></p><p>Sean</p><p></p><p>Yang</p></html>");
 		getContentPane().add(jLabel3);
 
-		jLabel1.setText("Version: v 0.1 Build: %svn% Date: %date%");
+		jLabel1.setText("Version: v 0.1 Build: 12 Date: 2009.12.01");
 		getContentPane().add(jLabel1);
 
 		pack();

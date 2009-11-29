@@ -36,7 +36,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Version: v 0.1 Build: %svn% Date: %date%"/>
+        <Property name="text" type="java.lang.String" value="Version: v 0.1 Build: 12 Date: 2009.12.01"/>
       </Properties>
     </Component>
   </SubComponents>
