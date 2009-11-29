@@ -8,22 +8,39 @@ package dhost.ui;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  *
  * @author  __USER__
  */
-public class Canvas extends javax.swing.JPanel {
+@SuppressWarnings("serial")
+public class Canvas extends javax.swing.JPanel implements UIInterface,KeyListener, MouseListener {
 
 	//my code
+	//Mutex to protect gitems
+	private ReadWriteLock rwloc_;
+	
 	// Keep track of all ball center positions
 	private Vector<GraphicState> gitems;
+
+	@Override
+	public void Update(Vector<GraphicState> gitems) {
+		rwloc_.writeLock();
+		this.gitems = gitems;
+	}
 
 	// This is the method that is responsible for displaying the contents of the
 	// canvas
 	public void paintComponent(Graphics graphics) {
+		rwloc_.readLock();
 		// Draw the component as before (i.e., default look)
 		super.paintComponent(graphics);
 
@@ -47,13 +64,46 @@ public class Canvas extends javax.swing.JPanel {
 			}
 		}
 	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		int kc = e.getKeyCode();
+		switch (kc)
+		{
+		case java.awt.event.KeyEvent.VK_UP:
+			break;
+		case java.awt.event.KeyEvent.VK_DOWN:
+			break;
+		case java.awt.event.KeyEvent.VK_LEFT:
+			break;
+		case java.awt.event.KeyEvent.VK_RIGHT:
+			break;
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 	//end of my code
 	
 	/** Creates new form Canvas */
 	public Canvas() {
 		initComponents();
-		gitems = new Vector<GraphicState>();
 		setBackground(Color.white);
+		
+		gitems = new Vector<GraphicState>();
+		rwloc_ = new ReentrantReadWriteLock();
+
+		addKeyListener(this);
+		addMouseListener(this);
 	}
 
 	/** This method is called from within the constructor to
@@ -75,6 +125,35 @@ public class Canvas extends javax.swing.JPanel {
 				Short.MAX_VALUE));
 	}// </editor-fold>
 	//GEN-END:initComponents
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		requestFocus(false);
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 
 	//GEN-BEGIN:variables
 	// Variables declaration - do not modify

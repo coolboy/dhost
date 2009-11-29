@@ -3,8 +3,6 @@ package dhost.net;
 import java.io.*;
 import java.net.*;
 
-import javax.swing.DebugGraphics;
-
 // TODO:  This is initial import from old code.. needs some re-working for the
 // type of stats we may collect for the Distributed Game Hosting project
 //
