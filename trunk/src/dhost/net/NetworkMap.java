@@ -2,6 +2,7 @@ package dhost.net;
 
 import java.util.*;
 import java.lang.Math;
+//import java.net.UnknownHostException;
 
 
 /*The class is constructed on any Collection of Peer objects.
@@ -15,6 +16,14 @@ import java.lang.Math;
  * peer ID of the peer the message originated at. Two or more can be the same peer ID,
  * for example if the local peer is the origin of the message, all three arguments will
  * be the same.
+ * 
+ * also contains public function:
+ * 
+ * public void removePeerFromMap(Integer peerID)
+ * 
+ * removes the specified peer from the map. Since all peers must maintain
+ * identical maps this needs to be called by all peers simultaneously
+ * 
  */
 
 public class NetworkMap{
@@ -187,7 +196,42 @@ public class NetworkMap{
 		 }
 		 }
 	 }
+	 
+	 /*Recreates the map without the specified peer. All peers need
+	  * to maintain identical maps, so this would have to be called
+	  * by all peers at the same time.
+	  */
+	 public void removePeerFromMap(Integer peerID){
+		 if(IDtoIndex.containsKey(peerID)){
+		 	peerVector.remove(IDtoIndex.get(peerID).intValue());		 
+		 	initializeIndexIDMap();
+		 	initializeTree();
+	 	}
+		 else{
+			 System.out.println("specified peer not found");
+		 }
+	 }
+	 /*
+	 public static void main(String[] args){
+		 try{
+		 int numPeers = 13376;//Integer.parseInt(args[1]);
+			Random rand = new Random();
+			ArrayList<Peer> peers = new ArrayList<Peer>();
+			for(int i = 0;i < numPeers; i++){
 
+				peers.add(new Peer("localhost",i));
 
+			}
+			
+			NetworkMap nmap = new NetworkMap(peers);
+			nmap.printGroup(0);
+			nmap.removePeerFromMap(peers.get(0).getID());
+			System.out.println("group 0 after remove:\n");
+			nmap.printGroup(0);
+		 }
+		 catch(UnknownHostException e){
+			 System.out.println("unknown host exception");
+		 }
+	 }*/
 
 }

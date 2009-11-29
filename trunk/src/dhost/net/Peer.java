@@ -15,7 +15,7 @@ public class Peer implements Comparable<Peer>
 	{
 		InetAddr = InetAddress.getByName(peerIPAddr);
 		portNumber = defaultPort;
-		peerID = new Integer(-1);
+		peerID = new Integer(-1);//represents null
 	}
 
 	// construct on IP, ID...
