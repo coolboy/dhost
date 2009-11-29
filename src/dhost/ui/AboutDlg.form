@@ -31,7 +31,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;p&gt;Chris&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Yang&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Sean&lt;/p&gt;&lt;/html&gt;"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;p&gt;Chris&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Sean&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;Yang&lt;/p&gt;&lt;/html&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
