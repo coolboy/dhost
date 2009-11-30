@@ -4,32 +4,33 @@ import java.net.*;
 
 public class Peer implements Comparable<Peer>
 {
-	private static final int defaultPort = 44777;
+	private static final int DEFAULT_PORT = 44777;
 	private Integer peerID;
 	private int portNumber;
 	InetAddress InetAddr;
 	// variable for bandwidth score? latency score? hardware score?
 
-	// construct peer on just an IP address, in string form
+	/** construct peer on just an IP address, in string form
+	 *  @deprecated This is useless as Peer always requires a real ID. */
 	public Peer(String peerIPAddr) throws UnknownHostException
 	{
 		InetAddr = InetAddress.getByName(peerIPAddr);
-		portNumber = defaultPort;
+		portNumber = DEFAULT_PORT;
 		peerID = new Integer(-1);//represents null
 	}
 
-	// construct on IP, ID...
+	// Construct on IP address and PeerID. Use default port.
 	public Peer(String peerIPAddr, int id) throws UnknownHostException
 	{
 		InetAddr = InetAddress.getByName(peerIPAddr);
 		peerID = new Integer(id);
-		portNumber = defaultPort;
+		portNumber = DEFAULT_PORT;
 	}
 
-	// construct on IP, port, and ID
-	public Peer(String peerIPAddr, int id, int port) throws UnknownHostException
+	// Standard constructor: construct on Address, Port, and PeerID
+	public Peer(String peerAddress, int id, int port) throws UnknownHostException
 	{
-		InetAddr = InetAddress.getByName(peerIPAddr);
+		InetAddr = InetAddress.getByName(peerAddress);
 		portNumber = port;
 		peerID = new Integer(id);
 	}
@@ -59,10 +60,11 @@ public class Peer implements Comparable<Peer>
 		return InetAddr;
 	}
 
+	/** compare is by Peer ID */
 	public int compareTo(Peer anotherPeer)
 	{    
 		int anotherPeerID = anotherPeer.getID();
-		if (this.peerID<anotherPeerID)
+		if (this.peerID < anotherPeerID)
 			return -1;
 		else if (this.peerID > anotherPeerID)
 			return 1;
