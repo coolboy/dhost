@@ -1,8 +1,8 @@
 package dhost.net;
 
 // TODO: This should be refactored to an implementation a generic message iface
-public class NetworkMessage {
-	
+public class NetworkMessage
+{
 	// TODO: better docs here
 	/* Message Types:
 	 * BROADCAST	state replication message
@@ -108,7 +108,6 @@ public class NetworkMessage {
 			toString += "\nwith raw payload value: " + payload;
 		
 		return toString;
-		
 	}
 
 	
@@ -125,6 +124,7 @@ public class NetworkMessage {
 			   payload.trim();
 	}
 	
+	// TODO: validate input and return whether decoding succeeded
 	private void decodeWireFormat(String input)
 	{
 		String[] data = input.split(":");
