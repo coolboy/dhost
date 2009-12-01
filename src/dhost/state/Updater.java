@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import dhost.net.MessageService;
 import dhost.net.MessageSubscriber;
 import dhost.net.NetworkMessage;
+import dhost.net.NetworkState;
 import dhost.net.Peer;
 
 
@@ -19,6 +20,13 @@ public class Updater implements MessageSubscriber
 	private int myID; // our peer ID
 	private MessageService msgService;
 	private GameState gamestate;  // reference to local game state 
+	NetworkState netstate; // used to get info about current network status
+	
+	public Updater(NetworkState netstate, MessageService msgService)
+	{
+		this.netstate = netstate;
+		this.msgService = msgService;
+	}
 	
 	/**
 	 * Request that any changes made to the specified Cell are sent out to all
@@ -38,34 +46,20 @@ public class Updater implements MessageSubscriber
 			CellChange stateChange = cell.getStateChange();
 			
 			// send changes out to the network
-			
-			// TODO:  How are we distributing updates exactly?
-			// - Find out which peers we need to send updates to
-			// - Get (vector) paths to these peers?
-			ArrayList<Peer> peers = new ArrayList<Peer>();
-			
-			// bogus test list of peers to send updates to
-			try {
-				peers.add(new Peer("localhost", 1));
-				peers.add(new Peer("localhost", 2));
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+			int[] outgoingIDs = netstate.getOutgoingPeerIDs();			
+			NetworkMessage prepMsg;
 			
 			// Send a state change message to the appropriate peers 
-			for(Peer p : peers)
+			for(int i : outgoingIDs)
 			{
-				NetworkMessage msg = new NetworkMessage(
-						myID, p.getID(), 0, NetworkMessage.MessageType.BROADCAST);
+				prepMsg = new NetworkMessage(
+					myID, myID, i, 0, NetworkMessage.MessageType.STATECHANGE);
 				
 				// set serialized state change as the message payload
-				msg.setPayload(stateChange.toString());
+				prepMsg.setPayload(stateChange.toString());
 				
-				// we may need to set a vector on the NetworkMessage.. discuss
+				msgService.sendMessage(prepMsg);
 			}
-			
 		}
 		
 		return true;
@@ -104,11 +98,10 @@ public class Updater implements MessageSubscriber
 	@Override
 	public void deliver(NetworkMessage message)
 	{
-		// shouldn't need this check..
-		if (message.getRequestType() == NetworkMessage.MessageType.BROADCAST)
-		{
-			handleUpdate(new CellChange(message.getPayload()));
-		}
+		// use NetworkMap to see if we need further propagation..
+		
+		// then hand off for further processing
+		handleUpdate(new CellChange(message.getPayload()));
 		
 	}
 
