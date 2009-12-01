@@ -5,22 +5,25 @@ public class NetworkMessage
 {
 	// TODO: better docs here
 	/* Message Types:
-	 * BROADCAST	state replication message
-	 * SYNC			state sync message (used in re-sync new/lost peer)
-	 * RESOLVE		state resolve request/reply, typically between two peers
-	 * INIT			peer initialization message
+	 * STATECHANGE	state change replication message
+	 * EVENT		event replication message
+	 * NETCHANGE	network change replication message (ex. dropped peer)
+	 * STATESYNC	state sync message (used in re-sync new/lost peer)
+	 * RESOLVE		state resolve request/reply (currently unused)
+	 * INIT			peer initialization message (currently unused)
 	 * 
 	 */
 	
 	public enum MessageType {
-		BROADCAST, SYNC, RESOLVE, INIT
+		STATECHANGE, EVENT, NETCHANGE, STATESYNC, RESOLVE, INIT
 	}
 	
+	private int originPeerID;
 	private int sourcePeerID;
 	private int destinationPeerID;
 	private long logicalClock;
 	private MessageType messageType;
-	private String payload; // serialized state update object data
+	private String payload; // serialized data used by some message types
 
 	/**
 	 * Standard NetworkMessage constructor
@@ -39,11 +42,13 @@ public class NetworkMessage
 	// we get around to doing conflict resolution stuff, as a "tie breaker" 
 	
 	public NetworkMessage(int sourcePeerID, int destinationPeerID,
-								long logicalClock, MessageType requestType)
+						  int originPeerID,	long logicalClock,
+						  MessageType requestType)
 	{
 		super();
 		this.destinationPeerID = destinationPeerID;
 		this.sourcePeerID = sourcePeerID;
+		this.originPeerID = originPeerID;
 		this.logicalClock = logicalClock;
 		this.messageType = requestType;
 		this.payload = new String();
@@ -72,6 +77,14 @@ public class NetworkMessage
 
 	public int getDestinationPeerID() {
 		return destinationPeerID;
+	}
+
+	public void setOriginPeerID(int originPeerID) {
+		this.originPeerID = originPeerID;
+	}
+
+	public int getOriginPeerID() {
+		return originPeerID;
 	}
 
 	public long getTimeOfRequest() {
@@ -119,6 +132,7 @@ public class NetworkMessage
 	{	
 		return sourcePeerID + ":" +
 			   destinationPeerID + ":" +
+			   originPeerID + ":" +
 			   logicalClock + ":" +
 			   messageType.toString() + ":" +
 			   payload.trim();
@@ -130,10 +144,11 @@ public class NetworkMessage
 		String[] data = input.split(":");
 		sourcePeerID = Integer.parseInt(data[0]);
 		destinationPeerID = Integer.parseInt(data[1]);
-		logicalClock = Long.parseLong(data[2]);
-		messageType = MessageType.valueOf(data[3]);
-		if (data.length == 5)
-			payload = data[4].trim();
+		originPeerID = Integer.parseInt(data[2]);
+		logicalClock = Long.parseLong(data[3]);
+		messageType = MessageType.valueOf(data[4]);
+		if (data.length == 6)
+			payload = data[5].trim();
 		else
 			payload = "";
 	}
