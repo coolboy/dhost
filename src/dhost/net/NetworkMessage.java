@@ -14,10 +14,6 @@ public class NetworkMessage
 	 * 
 	 */
 	
-	public enum MessageType {
-		STATECHANGE, EVENT, NETCHANGE, STATESYNC, RESOLVE, INIT
-	}
-	
 	private int originPeerID;
 	private int sourcePeerID;
 	private int destinationPeerID;
@@ -34,8 +30,7 @@ public class NetworkMessage
 	 * @param sourcePeerID peerID of sender of this message
 	 * @param destinationPeerID peerID of recipient of this message
 	 * @param logicalClock logical clock value associated with this message
-	 * @param messageType type of network message. requestType is one of:
-	 *  BROADCAST, SYNC, RESOLVE
+	 * @param messageType type of network message. See MessageType enum
 	 */
 	
 	// TODO: logical clock is optional for our uses, but it may be useful when
@@ -43,14 +38,14 @@ public class NetworkMessage
 	
 	public NetworkMessage(int sourcePeerID, int destinationPeerID,
 						  int originPeerID,	long logicalClock,
-						  MessageType requestType)
+						  MessageType msgType)
 	{
 		super();
 		this.destinationPeerID = destinationPeerID;
 		this.sourcePeerID = sourcePeerID;
 		this.originPeerID = originPeerID;
 		this.logicalClock = logicalClock;
-		this.messageType = requestType;
+		this.messageType = msgType;
 		this.payload = new String();
 	}
 
@@ -87,20 +82,20 @@ public class NetworkMessage
 		return originPeerID;
 	}
 
-	public long getTimeOfRequest() {
+	public long getTimeOfMessage() {
 		return logicalClock;
 	}
 
-	public void setTimeOfRequest(long timeOfRequest) {
-		this.logicalClock = timeOfRequest;
+	public void setTimeOfMessage(long timeOfMessage) {
+		this.logicalClock = timeOfMessage;
 	}
 	
-	public MessageType getRequestType() {
+	public MessageType getType() {
 		return messageType;
 	}
 
-	public void setRequestType(MessageType requestType) {
-		this.messageType = requestType;
+	public void setType(MessageType msgType) {
+		this.messageType = msgType;
 	}
 
 	public void setPayload(String payload) {

@@ -1,8 +1,9 @@
 package dhost.net;
 
-// TODO: There should probably be types of subscribers for routing purposes
 public interface MessageSubscriber {
 
+	public MessageType getType();
+	
 	public void deliver(NetworkMessage message);
 
 }

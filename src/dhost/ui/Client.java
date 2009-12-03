@@ -4,9 +4,13 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
+import dhost.app.GameApp;
+import dhost.event.Propagater;
 import dhost.net.*;
+import dhost.state.Updater;
 
 public class Client
 {
@@ -30,7 +34,8 @@ public class Client
 		peers = getPeersList(PEERLIST_DB);
 		
 		// Game code only needs to know peer IDs, not IPs/ports, so separate it
-		ArrayList<Integer> peerIDs = getPeerIDs(peers);
+		// no, game code doesn't know about peers probably.. only state and events
+		// ArrayList<Integer> peerIDs = getPeerIDs(peers);
 		
 		// Initialize the local messaging service
 		MessageService messageSvc = new MessageService(localPeerID,peers,
@@ -40,33 +45,41 @@ public class Client
 		messageSvc.enableStatServer(statServerIP, statServerPort);
 		
 		
-		// TODO: finish impl
 		// Initialize the requested distributed network structure 
-		// ..in case we want to try multiple implementations someday..
-		// PeerNetworkScheme scheme = null;
-		
+		// Refactor this to an interface "PeerNetworkScheme" or something
 		// if (networkScheme == 1)
-			// default network scheme..
-		//	scheme = new NetworkMap(peers);
+		NetworkMap netmap = new NetworkMap(peers.values());
 		
+		// Initialize NetworkState
+		NetworkState netstate = new NetworkState(netmap,peers);
 		
-		//
-		// Initialize any game state here (disk persistent, etc.)
-		//
-		
+		// Initialize Event Propagater and State Updater
+		/* NOTE:  I think the game code only needs to see these two..
+		 * This completely separates the game logic from any knowledge of the
+		 * network, even the peer IDs. Any other network stuff can be passed
+		 * to the game-containing Swing app, which has functions like "connect"
+		 * and some display of network status, etc. From the game perspective,
+		 * even a network failure is delivered via an event like "pause" etc.
+		 */
+		Propagater eventPropagater = new Propagater(netstate, messageSvc);
+		Updater stateUpdater = new Updater(netstate, messageSvc);
 
+		
+		// TODO: Select a game.. an implementation of GameApp..
+		// GameApp myGame = new YourGameHere(eventPropagater,stateUpdater);
+		
 		// Initialize the desired user interface
 		// TODO: implement these
 		if (mode == 1)
-			// new SwingUserInterface();
+			// new SwingUserInterface(GameApp);
 		if (mode == 2)
-			// new SimulationUserInterface(readRatio,simDelay);
+			// new SimulationUserInterface(GameApp, readRatio, simDelay);
 		
 		messageSvc.shutdown();
 		System.out.println("Exiting local client..");
 		
 		// wait for the message service to shut down..
-		// TODO: this is funky.. fix it!
+		// TODO: this is broke.. fix it!
 		while(messageSvc.isRunning())
 		{
 			try {
