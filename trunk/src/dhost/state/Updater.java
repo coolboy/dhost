@@ -1,13 +1,10 @@
 package dhost.state;
 
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-
 import dhost.net.MessageService;
 import dhost.net.MessageSubscriber;
+import dhost.net.MessageType;
 import dhost.net.NetworkMessage;
 import dhost.net.NetworkState;
-import dhost.net.Peer;
 
 
 /** 
@@ -20,12 +17,15 @@ public class Updater implements MessageSubscriber
 	private int myID; // our peer ID
 	private MessageService msgService;
 	private GameState gamestate;  // reference to local game state 
+	private static final MessageType SUBSCRIPTION_TYPE = MessageType.STATECHANGE;
 	NetworkState netstate; // used to get info about current network status
 	
 	public Updater(NetworkState netstate, MessageService msgService)
 	{
 		this.netstate = netstate;
 		this.msgService = msgService;
+		
+		myID = netstate.getLocalID();
 	}
 	
 	/**
@@ -53,7 +53,7 @@ public class Updater implements MessageSubscriber
 			for(int i : outgoingIDs)
 			{
 				prepMsg = new NetworkMessage(
-					myID, myID, i, 0, NetworkMessage.MessageType.STATECHANGE);
+					myID, myID, i, 0, SUBSCRIPTION_TYPE);
 				
 				// set serialized state change as the message payload
 				prepMsg.setPayload(stateChange.toString());
@@ -63,12 +63,6 @@ public class Updater implements MessageSubscriber
 		}
 		
 		return true;
-	}
-	
-	
-	private boolean networkSend()
-	{
-		return true;	
 	}
 	
 	/**
@@ -92,8 +86,7 @@ public class Updater implements MessageSubscriber
 
 
 	/** 
-	 * Handles an incoming NetworkMessage of type BROADCAST
-	 * 	
+	 * Handles an incoming STATECHANGE NetworkMessage 	
 	*/
 	@Override
 	public void deliver(NetworkMessage message)
@@ -103,6 +96,11 @@ public class Updater implements MessageSubscriber
 		// then hand off for further processing
 		handleUpdate(new CellChange(message.getPayload()));
 		
+	}
+
+	@Override
+	public MessageType getType() {
+		return SUBSCRIPTION_TYPE;
 	}
 
 }

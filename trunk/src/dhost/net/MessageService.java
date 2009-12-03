@@ -83,8 +83,7 @@ public class MessageService
 				output.println(message.encodeWireFormat());
 
 				// Log message generated statistic
-				if (message.getRequestType() !=
-					NetworkMessage.MessageType.INIT)
+				if (message.getType() != MessageType.INIT)
 				{
 					sendStat(1,1);
 				}
@@ -177,10 +176,11 @@ public class MessageService
 		if (message.getSourcePeerID() == myID)
 			System.out.println("Error: received message with own source ID!");
 		
-		// Deliver the message to all subscribers
+		// Deliver the message to all subscribers of the correct type
 		for (MessageSubscriber s : _subscribers)
 		{
-			s.deliver(message);
+			if (s.getType() == message.getType())
+				s.deliver(message);
 		}
 		
 	}
@@ -188,6 +188,11 @@ public class MessageService
 	public void subscribe(MessageSubscriber subscriber)
 	{
 		_subscribers.add(subscriber);	
+	}
+	
+	public void unsubscribe(MessageSubscriber subscriber)
+	{
+		_subscribers.remove(subscriber);	
 	}
 
 	public boolean isRunning() {

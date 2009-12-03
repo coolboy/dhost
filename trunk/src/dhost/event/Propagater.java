@@ -2,6 +2,7 @@ package dhost.event;
 
 import dhost.net.MessageService;
 import dhost.net.MessageSubscriber;
+import dhost.net.MessageType;
 import dhost.net.NetworkMessage;
 import dhost.net.NetworkState;
 
@@ -13,6 +14,7 @@ public class Propagater implements MessageSubscriber
 {
 	private int myID; // our peer ID
 	private MessageService msgService;
+	private MessageType SUBSCRIPTION_TYPE = MessageType.EVENT;
 	
 	NetworkState netstate; // used to get info about current network status
 	
@@ -20,6 +22,8 @@ public class Propagater implements MessageSubscriber
 	{
 		this.netstate = netstate;
 		this.msgService = msgService;
+		
+		myID = netstate.getLocalID();
 	}
 	
 	// used by client to originate an event out to the network
@@ -31,7 +35,7 @@ public class Propagater implements MessageSubscriber
 		for(int i : outgoingIDs)
 		{
 			prepMsg = new NetworkMessage(
-					myID, myID, i, 0, NetworkMessage.MessageType.EVENT);
+					myID, myID, i, 0, SUBSCRIPTION_TYPE);
 			
 			prepMsg.setPayload(evt.toString());
 			
@@ -42,7 +46,7 @@ public class Propagater implements MessageSubscriber
 	}
 	
 	// handle incoming events
-	private boolean receiveEvent(Event change)
+	private boolean receiveEvent(Event evt)
 	{
 		
 		// do local stuff with the event
@@ -55,7 +59,6 @@ public class Propagater implements MessageSubscriber
 	
 	/** 
 	 * Handles an incoming NetworkMessage of type EVENT
-	 * 	
 	*/
 	@Override
 	public void deliver(NetworkMessage message)
@@ -66,5 +69,10 @@ public class Propagater implements MessageSubscriber
 		// extract and de-marshall the event from message payload..
 		receiveEvent(new Event(message.getPayload()));	
 		
+	}
+
+	@Override
+	public MessageType getType() {
+		return SUBSCRIPTION_TYPE;
 	}
 }
