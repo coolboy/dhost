@@ -2,52 +2,113 @@ package dhost.examples.gamedemo;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
-import java.util.HashMap;
 
 
 public class GameController{
-	private HashMap<Integer,PeerAvatar> players;
-    private HashMap<Integer, Projectile> projectiles;
-    GameEventHandler gEventHandler;
-    int localAvatarID = -1;
+    private GameStateManager gameStateManager;
+    private DServer dServer;
+	private GamePanel gPanel;
+    private final int defaultWidth = 800;
+    private final int defaultHeight = 600;
+    @SuppressWarnings("unused")
+	private boolean paused;
+    private int localAvatarID = -1;
+    private int currentEventID;
     
-	public GameController(HashMap<Integer,PeerAvatar> _players,HashMap<Integer, Projectile> _projectiles){
-		players = _players;
-		projectiles = _projectiles;
-		gEventHandler = new GameEventHandler(players,projectiles);
+	public GameController(){
+		gameStateManager = new GameStateManager();
+		gPanel = new GamePanel(new MouseEventHandler(this), gameStateManager,defaultWidth,defaultHeight );
+		currentEventID =1;
+		paused = false;
+	}
+	
+	public void setServer (DServer server){
+		dServer = server;
+	}
+	
+	public GameStateManager getGameStateManager(){
+		return gameStateManager;
 	}
 	
 	public void mouseButton1(Point2D.Double clickPoint){
+		boolean success=false;
 		if(localAvatarID >=0){
-			if(players.containsKey(localAvatarID)){
-				gEventHandler.moveAvatar(new Integer(localAvatarID), clickPoint);
+			int thisEventID;
+			DemoGameEvent event = new DemoGameEvent();
+			Point2D.Double startPosition = new Point2D.Double();
+			synchronized(this){
+				thisEventID = currentEventID;
+				currentEventID++;
 			}
+			synchronized(gameStateManager){
+				if(gameStateManager.containsPeerAvatar(localAvatarID)){
+					startPosition = gameStateManager.getPeerAvatar(localAvatarID).getPosition();
+					gameStateManager.moveAvatar(new Integer(localAvatarID), clickPoint);
+					success=true;
+				}
+			}
+			if(success){
+				event.setAsMoveAvaEvent(localAvatarID, thisEventID, localAvatarID, clickPoint,startPosition);
+				dServer.handleEventFromClient(event);
+			}
+			
 		}
 	}
 	public void mouseButton3(Point2D.Double clickPoint){
+		boolean success=false;
 		if(localAvatarID >=0){
+			DemoGameEvent event = new DemoGameEvent();
+			int thisEventID;
+			int projID = 0;
+			Point2D.Double parentPosition = new Point2D.Double();
+   	 		synchronized(this){
+   	 			thisEventID = currentEventID;
+   	 			currentEventID++;
+   	 		}
 			System.out.println("Mouse event handled");
-			int projID = gEventHandler. spawnProjectile(localAvatarID, clickPoint);
-   	 		new ProjectileCollisionMonitor(this,players,projectiles.get(projID));
+			synchronized(gameStateManager){
+				if(gameStateManager.containsPeerAvatar(localAvatarID)){
+					parentPosition = gameStateManager.getPeerAvatar(localAvatarID).getPosition();
+					projID = gameStateManager. spawnProjectile(localAvatarID, clickPoint);
+					success = true;
+				}
+			}
+			if(success){
+				event.setAsNewProjectileEvent(localAvatarID, thisEventID, localAvatarID,projID, clickPoint,parentPosition);
+				dServer.handleEventFromClient(event);
+			}
+   	 		//new ProjectileCollisionMonitor(this,players,projectiles.get(projID));   	 		
 		}
 	}
 	public void spawnLocalAvatar(Integer id, Point2D.Double position){
 		if(localAvatarID<0){
 			localAvatarID = id.intValue();
-			gEventHandler.addPeer(id, position);
-			players.get(id).setColor(Color.green);
+			synchronized(gameStateManager){
+				gameStateManager.addPeer(id, position);
+				gameStateManager.getPeerAvatar(id).setColor(Color.green);
+			}
 		}
 	}
 	public void spawnPeerAvatar(Integer id, Point2D.Double position){
-		if(!players.containsKey(id)){
-			System.out.println("spawning peer "+ id);
-			gEventHandler.addPeer(id, position);
-		}
+		gameStateManager.addPeer(id, position);
 	}
-	 public void handleProjectilePeerCollision(Integer peerID, Integer projectileID){
-		 if(!projectiles.get(projectileID).parent().equals(peerID)){
-			 gEventHandler.killPeer(peerID);
-			 gEventHandler.killProjectile(projectileID);
+	 public void handleProjectilePeerCollision(Integer peerID, Integer projectileParentID, Integer projectileID){
+		 
+		 if(!projectileParentID.equals(peerID)){
+			 gameStateManager.killPeer(peerID);
+			 gameStateManager.killProjectile(projectileParentID,projectileID);
 		 }
 	 }
+	 
+	 public Integer getLocalAvatarID(){
+		 return localAvatarID;
+	 }
+	 
+	 public GamePanel getGamePanel(){
+		 return gPanel;
+	 }
+	 
+	public void handleEventFromServer(DemoGameEvent event){
+		
+	}
 }

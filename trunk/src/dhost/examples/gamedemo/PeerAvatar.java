@@ -6,7 +6,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 
-public class PeerAvatar{
+public class PeerAvatar implements Drawable{
 	private final double RADIUS = (double)15;
 	private Ellipse2D.Double ellipse;
 	private double deltax;
@@ -28,7 +28,7 @@ public class PeerAvatar{
 	}
 	
 	public void setPosition(Point2D.Double p){
-		ellipse.setFrame(p.getX(),p.getY(),RADIUS*2,RADIUS*2);	
+		ellipse.setFrame(p.getX()-RADIUS,p.getY()-RADIUS,RADIUS*2,RADIUS*2);	
 	}
 	
 	
@@ -43,7 +43,7 @@ public class PeerAvatar{
 		myColor =c;
 	}
 	public synchronized void  updatePosition(){
-		Point2D.Double p  = new Point2D.Double(ellipse.getX()+(deltax*speed),ellipse.getY()+(deltay*speed));
+		Point2D.Double p  = new Point2D.Double(ellipse.getX()+(deltax*speed)+RADIUS,ellipse.getY()+(deltay*speed)+RADIUS);
 		setPosition(p);
 		if(p.distance(destPoint)< 5){
 			moving=false;
@@ -73,8 +73,8 @@ public class PeerAvatar{
 		moving =true;
 		
 			setPosition(start);
-			destPoint=new Point2D.Double(dest.getX()-RADIUS,dest.getY()-RADIUS);
-			deltax = destPoint.getX()-start.getX()  ;
+			destPoint=new Point2D.Double(dest.getX(),dest.getY());
+			deltax = destPoint.getX()-start.getX();
 			deltay = destPoint.getY()-start.getY()  ;
 			deltax = deltax / start.distance(dest);
 			deltay = deltay / start.distance(dest);
@@ -89,8 +89,8 @@ public class PeerAvatar{
 	public synchronized void move(Point2D.Double dest){
 		
 		moving =true;
-		Point2D.Double start = new Point2D.Double(ellipse.getX(),ellipse.getY());
-		destPoint=new Point2D.Double(dest.getX()-RADIUS,dest.getY()-RADIUS);
+		Point2D.Double start = new Point2D.Double(ellipse.getX()+RADIUS,ellipse.getY()+RADIUS);
+		destPoint=new Point2D.Double(dest.getX(),dest.getY());
 		deltax = destPoint.getX()-start.getX()  ;
 		deltay = destPoint.getY()-start.getY()  ;
 		deltax = deltax / start.distance(dest);
