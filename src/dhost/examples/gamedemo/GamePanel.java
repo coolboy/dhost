@@ -1,12 +1,14 @@
-
+/*Relatively simple panel that just provides a paintComponent method that draws
+ * a collection of objects representing the game state. This collection is provided by a
+ * GameStateManager object.
+ * 
+ */
 package dhost.examples.gamedemo;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.util.HashMap;
-
 import javax.swing.JPanel;
 
 
@@ -14,13 +16,12 @@ import javax.swing.JPanel;
 public class GamePanel extends JPanel{
 	
 	private int prefwid, prefht;
-    private HashMap<Integer,PeerAvatar> players;
-    private HashMap<Integer, Projectile> projectiles;
+    private GameStateManager gameStateManager;
     @SuppressWarnings("unused")
 	private ScreenRefresher refresher;
     
 
-          public GamePanel(MouseEventHandler meh, int pwid, int pht)
+          public GamePanel(MouseEventHandler meh,GameStateManager gsm, int pwid, int pht)
           {
         	  super();
         	  
@@ -28,6 +29,7 @@ public class GamePanel extends JPanel{
                prefht = pht;
                super.setBackground(Color.black);
                super.addMouseListener(meh);
+               gameStateManager = gsm;
                refresher = new ScreenRefresher(this);
            }
 
@@ -35,14 +37,10 @@ public class GamePanel extends JPanel{
            {
                super.paintComponent(g);
                Graphics2D g2d = (Graphics2D)g;
-               synchronized(players){
-               for ( PeerAvatar p : players.values()){
-            	   p.drawWith(g2d);
-               }}
-               synchronized(projectiles){
-               for(Projectile p : projectiles.values()){
-            	   p.drawWith(g2d);
-               }}
+               for(Drawable D : gameStateManager.getObjectsToDraw()){
+            	   D.drawWith(g2d);
+               }
+               
            }
 
            public Dimension getPreferredSize()
@@ -52,11 +50,6 @@ public class GamePanel extends JPanel{
            
            
            
-           public void  setPlayerMap(HashMap<Integer,PeerAvatar> m){
-        	   players = m;
-           }
-           public void  setProjectileMap(HashMap<Integer, Projectile> m){
-        	   projectiles = m;
-           }
+           
 }
 

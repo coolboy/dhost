@@ -9,9 +9,10 @@ public class ProjectileCollisionMonitor implements Runnable{
 	private HashMap<Integer,PeerAvatar> players;
 	private Projectile myProjectile;
 	
-	public ProjectileCollisionMonitor(GameController _gController, HashMap<Integer,PeerAvatar> _players, Projectile proj){
-		players=_players;
+	public ProjectileCollisionMonitor(GameController _gController, Projectile proj){
+		
 		gController = _gController;
+		players=gController.getGameStateManager().getPlayerMap();
 		myProjectile = proj;
 		
 		new Thread(this).start();
@@ -27,10 +28,10 @@ public class ProjectileCollisionMonitor implements Runnable{
 			else{
 				synchronized(players){
 					for(PeerAvatar p: players.values()){
-						if(!p.getID().equals(myProjectile.parent())){
+						if(!p.getID().equals(myProjectile.getParentID())){
 							if(p.intersects(myProjectile.getRectangle2D())){
 								System.out.println("collision detected");
-								gController.handleProjectilePeerCollision(p.getID(), myProjectile.getID());
+								gController.handleProjectilePeerCollision(p.getID(),myProjectile.getParentID(), myProjectile.getID());
 								done=true;
 								break;
 							}

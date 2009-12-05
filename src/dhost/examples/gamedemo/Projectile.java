@@ -6,7 +6,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 
-public class Projectile implements Runnable{
+public class Projectile implements Runnable, Drawable{
 	private final double RADIUS = (double)2;
 	private Ellipse2D.Double ellipse;
 	private double deltax;
@@ -18,10 +18,10 @@ public class Projectile implements Runnable{
 	private Thread thread;
 	private Integer myID;
 	private Integer parentID;
-	private GameEventHandler gEventHandler;
+	private GameStateManager gStateUpdater;
 	
 	
-	public Projectile(GameEventHandler _gEventHandler, Integer _myID, Integer _parentID, Point2D.Double start, Point2D.Double end){
+	public Projectile(GameStateManager _gStateUpdater, Integer _myID, Integer _parentID, Point2D.Double start, Point2D.Double end){
 		xbound = end.getX();
 		ybound = end.getY();
 		ellipse = new Ellipse2D.Double(start.getX()-RADIUS,start.getY()-RADIUS,RADIUS*2,RADIUS*2);
@@ -33,7 +33,7 @@ public class Projectile implements Runnable{
 		deltay = deltay/distance;
 		myID = _myID;
 		parentID = _parentID;
-		gEventHandler = _gEventHandler;
+		gStateUpdater = _gStateUpdater;
 		thread = new Thread(this);
 		thread.start();
 	}
@@ -43,7 +43,7 @@ public class Projectile implements Runnable{
 		while (!done){
 			if(distFromDest(currx,curry)<=(double)8){
 				done=true;
-				gEventHandler.killProjectile(myID);
+				gStateUpdater.killProjectile(parentID, myID);
 			}
 			else{
 				currx+=deltax*speed;
@@ -77,7 +77,7 @@ public class Projectile implements Runnable{
 		return Math.sqrt(((x-xbound)*(x-xbound)+(y-ybound)*(y-ybound)));
 	}
 	
-	public Integer parent(){
+	public Integer getParentID(){
 		return parentID;
 	}
 	
