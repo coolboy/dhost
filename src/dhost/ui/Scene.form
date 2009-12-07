@@ -83,8 +83,6 @@
     <Property name="rows" type="int" value="0"/>
   </Layout>
   <SubComponents>
-    <Container class="dhost.ui.Canvas" name="canvas">
-    </Container>
     <Component class="javax.swing.JTextField" name="OutputTF">
       <Properties>
         <Property name="text" type="java.lang.String" value="Ready"/>

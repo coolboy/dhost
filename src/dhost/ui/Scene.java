@@ -8,6 +8,8 @@ package dhost.ui;
 
 import java.lang.System;
 
+import dhost.examples.gamedemo.*
+
 ;
 
 /**
@@ -30,7 +32,7 @@ public class Scene extends javax.swing.JFrame {
 	// <editor-fold defaultstate="collapsed" desc="Generated Code">
 	private void initComponents() {
 
-		canvas = new dhost.ui.Canvas();
+		canvas = new dhost.examples.gamedemo.GameController().getGamePanel();
 		OutputTF = new javax.swing.JTextField();
 		MenuBar = new javax.swing.JMenuBar();
 		FileM = new javax.swing.JMenu();
@@ -133,7 +135,7 @@ public class Scene extends javax.swing.JFrame {
 	private javax.swing.JMenuBar MenuBar;
 	private javax.swing.JTextField OutputTF;
 	private javax.swing.JMenuItem StartMI;
-	private dhost.ui.Canvas canvas;
+	private dhost.examples.gamedemo.GamePanel canvas;
 	// End of variables declaration//GEN-END:variables
 
 	private ConnectDlg connDlg = new ConnectDlg(this, true);
