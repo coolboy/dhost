@@ -1,5 +1,6 @@
 package dhost.examples.gamedemo;
 
+import java.util.Random;
 import java.util.Vector;
 
 import dhost.event.Event;
@@ -10,9 +11,11 @@ public class DServer {
 	private Propagater propagater;
 	private Integer localPeerID;
 	private Vector<Integer> peerVector;
+	private Integer currentMonitorNumber;
 	
 	public DServer(){
 		peerVector = new Vector<Integer>();
+		currentMonitorNumber = new Integer(1);
 	}
 	
 	public void handleEventFromClient(DemoGameEvent event){
@@ -57,12 +60,21 @@ public class DServer {
 		if(peerVector.size()==1){
 			event.setMonitors(peerVector);
 		}
+		else{
+			Random rand = new Random();
+			Vector<Integer> monitorVect = new Vector<Integer>();
+			monitorVect.add(peerVector.get(rand.nextInt()%peerVector.size()));
+			event.setMonitors(monitorVect);
+		}
 		//TODO implement monitor assignment/management algorithm
 	}
 	
 	private void monitorEvent(DemoGameEvent event){
 		if(event.getType()==DemoGameEventType.NEW_PROJECTILE){
-			new ProjectileCollisionMonitor(gController, gController.getGameStateManager().getProjectile(event.getObjectOneID(),event.getObjectTwoID()));
+			synchronized(currentMonitorNumber){
+				new ProjectileCollisionMonitor(this, gController,currentMonitorNumber.intValue(),gController.getGameStateManager().getProjectile(event.getObjectOneID(),event.getObjectTwoID()));
+				currentMonitorNumber = currentMonitorNumber.intValue()+1;
+			}
 		}
 	}
 	
@@ -76,6 +88,12 @@ public class DServer {
 	}
 	private void sendDemoGameEventToClient(DemoGameEvent event){
 		gController.handleEventFromServer(event);
+	}
+	
+	
+	
+	public void monitorFinished(int monitorNumber){
+		
 	}
 	
 }
