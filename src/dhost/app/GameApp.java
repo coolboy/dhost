@@ -1,5 +1,7 @@
 package dhost.app;
 
+import javax.swing.JPanel;
+
 /* NOTE: GameApp is a generic game interface usable by either a GUI
  * client or the simulator.  It initializes the game irrespective of any
  * available GUI implementation so that we can actually run the game
@@ -22,6 +24,6 @@ public interface GameApp
 	 *  add the GUI later.  These are asynchronous of course. The game GUI gets
 	 *  on the Swing thread after initialization.
 	 */
-	// public SomeWrappedSwingElementType initGUI();
+	public JPanel getPanel();
 	
 }

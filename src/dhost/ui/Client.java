@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import dhost.app.GameApp;
 import dhost.event.Propagater;
+import dhost.examples.gamedemo.DemoGameApp;
 import dhost.net.*;
 import dhost.state.Updater;
 
@@ -35,7 +36,7 @@ public class Client
 		
 		// Game code only needs to know peer IDs, not IPs/ports, so separate it
 		// no, game code doesn't know about peers probably.. only state and events
-		// ArrayList<Integer> peerIDs = getPeerIDs(peers);
+		ArrayList<Integer> peerIDs = getPeerIDs(peers);
 		
 		// Initialize the local messaging service
 		MessageService messageSvc = new MessageService(localPeerID,peers,
@@ -66,7 +67,8 @@ public class Client
 
 		
 		// TODO: Select a game.. an implementation of GameApp..
-		// GameApp myGame = new YourGameHere(eventPropagater,stateUpdater);
+		//must set localPeerID before calling this
+		GameApp myGame = new DemoGameApp(eventPropagater,peerIDs,localPeerID);
 		
 		// Initialize the desired user interface
 		// TODO: implement these

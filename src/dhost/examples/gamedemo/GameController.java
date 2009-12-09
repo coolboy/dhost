@@ -13,12 +13,12 @@ public class GameController{
     @SuppressWarnings("unused")
 	private boolean paused;
     private int localAvatarID = -1;
-    private int currentEventID;
+    private Integer currentEventID;
     
 	public GameController(){
 		gameStateManager = new GameStateManager();
 		gPanel = new GamePanel(new MouseEventHandler(this), gameStateManager,defaultWidth,defaultHeight );
-		currentEventID =1;
+		currentEventID =new Integer(1);
 		paused = false;
 	}
 	
@@ -37,7 +37,7 @@ public class GameController{
 			DemoGameEvent event = new DemoGameEvent();
 			Point2D.Double startPosition = new Point2D.Double();
 			synchronized(this){
-				thisEventID = currentEventID;
+				thisEventID = currentEventID.intValue();
 				currentEventID++;
 			}
 			synchronized(gameStateManager){
@@ -61,7 +61,7 @@ public class GameController{
 			int thisEventID;
 			int projID = 0;
 			Point2D.Double parentPosition = new Point2D.Double();
-   	 		synchronized(this){
+   	 		synchronized(currentEventID){
    	 			thisEventID = currentEventID;
    	 			currentEventID++;
    	 		}
@@ -95,6 +95,14 @@ public class GameController{
 	 public void handleProjectilePeerCollision(Integer peerID, Integer projectileParentID, Integer projectileID){
 		 
 		 if(!projectileParentID.equals(peerID)){
+			 DemoGameEvent event = new DemoGameEvent();
+			 int thisEventID;
+			 synchronized(currentEventID){
+	   	 			thisEventID = currentEventID;
+	   	 			currentEventID++;
+	   	 		}
+			 event.setAsCollisionEvent(localAvatarID,thisEventID, projectileParentID, projectileID, peerID);
+			 dServer.handleEventFromClient(event);
 			 gameStateManager.killPeer(peerID);
 			 gameStateManager.killProjectile(projectileParentID,projectileID);
 		 }
@@ -110,5 +118,18 @@ public class GameController{
 	 
 	public void handleEventFromServer(DemoGameEvent event){
 		
+		if(event.getType()==DemoGameEventType.NEW_AVATAR){
+			spawnPeerAvatar(event.getObjectOneID(), event.getPrimaryPosition());
+		}
+		else if(event.getType()==DemoGameEventType.NEW_PROJECTILE){
+			gameStateManager. spawnProjectile(event.getObjectOneID(), event.getObjectTwoID(),event.getPrimaryPosition());
+		}
+		else if(event.getType()==DemoGameEventType.MOVE_AVATAR){
+			gameStateManager.moveAvatar(event.getObjectOneID(), event.getSecondaryPosition(), event.getPrimaryPosition());
+		}
+		else if(event.getType()==DemoGameEventType.COLLISION){
+			gameStateManager.killPeer(event.getObjectThreeID());
+			 gameStateManager.killProjectile(event.getObjectOneID(),event.getObjectTwoID());
+		}
 	}
 }
