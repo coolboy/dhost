@@ -1,99 +1,82 @@
 package dhost.examples.gamedemo;
 
-import java.util.Random;
-import java.util.Vector;
-
+import dhost.event.AppEvent;
 import dhost.event.Event;
+import dhost.event.EventHandler;
 import dhost.event.Propagater;
 
-public class DServer {
+
+public class DServer implements EventHandler
+{
 	private GameController gController;
 	private Propagater propagater;
 	private Integer localPeerID;
-	private Vector<Integer> peerVector;
-	private Integer currentMonitorNumber;
 	
-	public DServer(){
-		peerVector = new Vector<Integer>();
-		currentMonitorNumber = new Integer(1);
-	}
-	
-	public void handleEventFromClient(DemoGameEvent event){
-		assignMonitors(event);
-		if(event.getMonitors().contains(localPeerID)){
-			monitorEvent(event);
-		}
-		sendEventToNetwork(event);
-		
-		
-	}
-	
-	public void setPropagator(Propagater p){
+	public DServer(Propagater p)
+	{
 		propagater = p;
 	}
 	
-	public void handleEventFromNetwork(Event event){
-		DemoGameEvent dGameEvent = (DemoGameEvent)event;
-		sendDemoGameEventToClient(dGameEvent);
-		if(dGameEvent.getMonitors().contains(localPeerID)){
-			monitorEvent(dGameEvent);
-		}
+	public void handleEventFromClient(DemoGameEvent gameEvent)
+	{
+		// Package our DemoGameEvent into a full event, then propagate it..
+		Event event = new Event(localPeerID);
+		event.setAppEvent(gameEvent);
 		
+		propagater.propagate(event);
 	}
 	
-	public void setGameController(GameController g){
+	// Propagator calls this to pass an incoming message along..
+	public void handleEvent(Event event)
+	{
+		DemoGameEvent dge = null;
+		
+		// Unpack the DemoGameEvent from the general Event, then process
+		AppEvent ae = event.getAppEvent();
+		if (ae instanceof DemoGameEvent)
+		{
+			dge = (DemoGameEvent)ae;
+		}
+		// TODO: need some error handling here..
+		
+		gController.handleEventFromServer(dge);
+		
+		if (event.getPeerMonitorResponsibility(localPeerID))
+		{
+			monitorEvent(dge);
+		}
+	}
+	
+	public void setGameController(GameController g)
+	{
 		gController = g;
 	}
 	
-	public void setLocalPeerID(Integer id){
+	public void setLocalPeerID(Integer id)
+	{
 		localPeerID = id;
-		if (peerVector.size()==0){
-			peerVector.add(id);
-		}
 	}
-	
-	public void setPeerVector(Vector<Integer> peers){
-		peerVector = peers;
-	}
-	
-	private void assignMonitors(DemoGameEvent event){
-		if(peerVector.size()==1){
+		
+	// This functionality moved to Propagator instead, where we can access
+	// NetworkState to determine current loading of peers
+	/*
+	private void assignMonitors(DemoGameEvent event)
+	{
+		if (peerVector.size() == 1)
+		{
 			event.setMonitors(peerVector);
-		}
-		else{
-			Random rand = new Random();
-			Vector<Integer> monitorVect = new Vector<Integer>();
-			monitorVect.add(peerVector.get(rand.nextInt()%peerVector.size()));
-			event.setMonitors(monitorVect);
 		}
 		//TODO implement monitor assignment/management algorithm
 	}
+	*/
 	
-	private void monitorEvent(DemoGameEvent event){
-		if(event.getType()==DemoGameEventType.NEW_PROJECTILE){
-			synchronized(currentMonitorNumber){
-				new ProjectileCollisionMonitor(this, gController,currentMonitorNumber.intValue(),gController.getGameStateManager().getProjectile(event.getObjectOneID(),event.getObjectTwoID()));
-				currentMonitorNumber = currentMonitorNumber.intValue()+1;
-			}
+	private void monitorEvent(DemoGameEvent gameEvent)
+	{
+		if (gameEvent.getType() == DemoGameEventType.NEW_PROJECTILE)
+		{
+			new ProjectileCollisionMonitor(gController,
+				gController.getGameStateManager().getProjectile(
+				 gameEvent.getObjectOneID(),gameEvent.getObjectTwoID()));
 		}
 	}
-	
-	private void sendEventToNetwork(Event e){
-		try{
-			propagater.propagate(e);
-		}
-		catch(NullPointerException ex){
-			System.out.println("propagator not initialized");
-		}
-	}
-	private void sendDemoGameEventToClient(DemoGameEvent event){
-		gController.handleEventFromServer(event);
-	}
-	
-	
-	
-	public void monitorFinished(int monitorNumber){
-		
-	}
-	
 }

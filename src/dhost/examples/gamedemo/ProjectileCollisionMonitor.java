@@ -8,13 +8,10 @@ public class ProjectileCollisionMonitor implements Runnable{
 	private GameController gController;
 	private HashMap<Integer,PeerAvatar> players;
 	private Projectile myProjectile;
-	private DServer dServer;
-	private int monitorNumber;
 	
-	public ProjectileCollisionMonitor(DServer dServer, GameController gController, int monitorNumber, Projectile proj){
-		this.dServer = dServer;
-		this.gController = gController;
-		this.monitorNumber = monitorNumber;
+	public ProjectileCollisionMonitor(GameController _gController, Projectile proj){
+		
+		gController = _gController;
 		players=gController.getGameStateManager().getPlayerMap();
 		myProjectile = proj;
 		
@@ -34,8 +31,6 @@ public class ProjectileCollisionMonitor implements Runnable{
 						if(!p.getID().equals(myProjectile.getParentID())){
 							if(p.intersects(myProjectile.getRectangle2D())){
 								System.out.println("collision detected");
-		
-								
 								gController.handleProjectilePeerCollision(p.getID(),myProjectile.getParentID(), myProjectile.getID());
 								done=true;
 								break;
@@ -49,8 +44,6 @@ public class ProjectileCollisionMonitor implements Runnable{
    	 		}
    	 		catch (InterruptedException e) {}	
 		}
-		
-		dServer.monitorFinished(monitorNumber);
 	}
 	
 

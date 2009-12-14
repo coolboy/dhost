@@ -26,11 +26,9 @@ public class DemoGameApp implements GameApp{
     }
 	// Start the game logic (ie. may be headless for simulation)
 	public void startGame(){
-		server = new DServer();
-		server.setPropagator(propagater);
+		server = new DServer(propagater);
 		Vector<Integer> peervect = new Vector<Integer>();
 		peervect.addAll(peerIDs);
-		server.setPeerVector(peervect);
 		gController = new GameController();
 		gController.setServer(server);
 		gController.spawnLocalAvatar(localPeerID,new Point2D.Double(200,200));

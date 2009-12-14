@@ -54,30 +54,6 @@ public class GameStateManager {
 		
 	}
 	
-	public int spawnProjectile(Integer parentID, Integer projectileID, Point2D.Double dest){
-		Point2D.Double start;
-		synchronized(players){
-			if(players.containsKey(parentID)){
-				start = players.get(parentID).getPosition();
-			}
-			else return -1;
-		}
-	
-		synchronized(projectiles){			
-			
-			if(projectiles.containsKey(parentID)){
-				projectiles.get(parentID).put(projectileID, new Projectile(this,projectileID,parentID,start,dest));
-			}
-			else{
-				projectiles.put(parentID, new HashMap<Integer,Projectile>());
-				projectiles.get(parentID).put(projectileID, new Projectile(this,projectileID,parentID,start,dest));
-			}
-		}
-		return projectileID;
-		
-		
-	}
-	
 	public boolean killProjectile(Integer parentID, Integer projectileID){
 		boolean returnVal = false;
 		synchronized(projectiles){
