@@ -3,26 +3,28 @@ package dhost.examples.gamedemo;
 import java.awt.Color;
 import java.awt.geom.Point2D;
 
-
-public class GameController{
+public class GameController
+{
     private GameStateManager gameStateManager;
     private DServer dServer;
 	private GamePanel gPanel;
     private final int defaultWidth = 800;
     private final int defaultHeight = 600;
-    @SuppressWarnings("unused")
 	private boolean paused;
     private int localAvatarID = -1;
-    private Integer currentEventID;
+    private int currentEventID;
     
-	public GameController(){
+	public GameController()
+	{
 		gameStateManager = new GameStateManager();
-		gPanel = new GamePanel(new MouseEventHandler(this), gameStateManager,defaultWidth,defaultHeight );
-		currentEventID =new Integer(1);
+		gPanel = new GamePanel(new MouseEventHandler(this),
+				gameStateManager, defaultWidth, defaultHeight);
+		currentEventID = 1;
 		paused = false;
 	}
 	
-	public void setServer (DServer server){
+	public void setServer (DServer server)
+	{
 		dServer = server;
 	}
 	
@@ -30,14 +32,15 @@ public class GameController{
 		return gameStateManager;
 	}
 	
-	public void mouseButton1(Point2D.Double clickPoint){
+	public void mouseButton1(Point2D.Double clickPoint)
+	{
 		boolean success=false;
 		if(localAvatarID >=0){
 			int thisEventID;
 			DemoGameEvent event = new DemoGameEvent();
 			Point2D.Double startPosition = new Point2D.Double();
 			synchronized(this){
-				thisEventID = currentEventID.intValue();
+				thisEventID = currentEventID;
 				currentEventID++;
 			}
 			synchronized(gameStateManager){
@@ -48,20 +51,23 @@ public class GameController{
 				}
 			}
 			if(success){
-				event.setAsMoveAvaEvent(localAvatarID, thisEventID, localAvatarID, clickPoint,startPosition);
+				event.setAsMoveAvatarEvent(localAvatarID, thisEventID,
+						clickPoint, startPosition);
 				dServer.handleEventFromClient(event);
 			}
 			
 		}
 	}
-	public void mouseButton3(Point2D.Double clickPoint){
+	
+	public void mouseButton3(Point2D.Double clickPoint)
+	{
 		boolean success=false;
 		if(localAvatarID >=0){
 			DemoGameEvent event = new DemoGameEvent();
 			int thisEventID;
 			int projID = 0;
 			Point2D.Double parentPosition = new Point2D.Double();
-   	 		synchronized(currentEventID){
+   	 		synchronized(this){
    	 			thisEventID = currentEventID;
    	 			currentEventID++;
    	 		}
@@ -74,62 +80,55 @@ public class GameController{
 				}
 			}
 			if(success){
-				event.setAsNewProjectileEvent(localAvatarID, thisEventID, localAvatarID,projID, clickPoint,parentPosition);
+				event.setAsNewProjectileEvent(localAvatarID, thisEventID,
+						projID, clickPoint,parentPosition);
 				dServer.handleEventFromClient(event);
 			}
    	 		//new ProjectileCollisionMonitor(this,players,projectiles.get(projID));   	 		
 		}
 	}
-	public void spawnLocalAvatar(Integer id, Point2D.Double position){
-		if(localAvatarID<0){
+	
+	public void spawnLocalAvatar(Integer id, Point2D.Double position)
+	{
+		if(localAvatarID<0)
+		{
 			localAvatarID = id.intValue();
-			synchronized(gameStateManager){
+			synchronized(gameStateManager)
+			{
 				gameStateManager.addPeer(id, position);
 				gameStateManager.getPeerAvatar(id).setColor(Color.green);
 			}
 		}
 	}
-	public void spawnPeerAvatar(Integer id, Point2D.Double position){
+
+	public void spawnPeerAvatar(Integer id, Point2D.Double position)
+	{
 		gameStateManager.addPeer(id, position);
 	}
-	 public void handleProjectilePeerCollision(Integer peerID, Integer projectileParentID, Integer projectileID){
-		 
-		 if(!projectileParentID.equals(peerID)){
-			 DemoGameEvent event = new DemoGameEvent();
-			 int thisEventID;
-			 synchronized(currentEventID){
-	   	 			thisEventID = currentEventID;
-	   	 			currentEventID++;
-	   	 		}
-			 event.setAsCollisionEvent(localAvatarID,thisEventID, projectileParentID, projectileID, peerID);
-			 dServer.handleEventFromClient(event);
-			 gameStateManager.killPeer(peerID);
-			 gameStateManager.killProjectile(projectileParentID,projectileID);
-		 }
-	 }
-	 
-	 public Integer getLocalAvatarID(){
-		 return localAvatarID;
-	 }
-	 
-	 public GamePanel getGamePanel(){
-		 return gPanel;
-	 }
-	 
-	public void handleEventFromServer(DemoGameEvent event){
-		
-		if(event.getType()==DemoGameEventType.NEW_AVATAR){
-			spawnPeerAvatar(event.getObjectOneID(), event.getPrimaryPosition());
+
+	// TODO: Need to generate a collision event at some point here..
+	public void handleProjectilePeerCollision(Integer peerID,
+			Integer projectileParentID, Integer projectileID)
+	{
+		if (!projectileParentID.equals(peerID))
+		{
+			gameStateManager.killPeer(peerID);
+			gameStateManager.killProjectile(projectileParentID,projectileID);
 		}
-		else if(event.getType()==DemoGameEventType.NEW_PROJECTILE){
-			gameStateManager. spawnProjectile(event.getObjectOneID(), event.getObjectTwoID(),event.getPrimaryPosition());
-		}
-		else if(event.getType()==DemoGameEventType.MOVE_AVATAR){
-			gameStateManager.moveAvatar(event.getObjectOneID(), event.getSecondaryPosition(), event.getPrimaryPosition());
-		}
-		else if(event.getType()==DemoGameEventType.COLLISION){
-			gameStateManager.killPeer(event.getObjectThreeID());
-			 gameStateManager.killProjectile(event.getObjectOneID(),event.getObjectTwoID());
-		}
+	}
+
+	public Integer getLocalAvatarID()
+	{
+		return localAvatarID;
+	}
+
+	public GamePanel getGamePanel()
+	{
+		return gPanel;
+	}
+
+	public void handleEventFromServer(DemoGameEvent event)
+	{
+
 	}
 }
