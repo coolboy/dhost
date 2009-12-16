@@ -11,27 +11,40 @@ public class DemoGameEvent implements AppEvent
 	private AppEventType appEventType;
 	private Integer objectOneID;
 	private Integer objectTwoID;
+	private Integer objectThreeID;
 	private Point2D.Double primaryPosition;
 	private Point2D.Double secondaryPosition;
-	private boolean needsMonitor;
+
+	
 	
 	 // used by game code for..???  seems flaky because of global collisions
+	
+	//an event is identified by its origin ID + eventID, so there arent collisions.
+	//not used by the game code though, can be done at network level, also not necessarily
+	//used by anything, just seemed like there could be a lot of potential reasons for
+	//needing to identify an event
+	//note origin ID is set closer to network level
 	private int eventID;
+	
+	//must be set at game level because only the game knows the relative monitor
+	//resource weights of its events....
+	private double monitorWeight;
+	
 	
 	// Construct a DemoGameEvent from a serialized version
 	public DemoGameEvent(String payload)
 	{
+		appEventType = AppEventType.DEMO_GAME_EVENT;
 		decodeString(payload);
 	}
 	
 	// Constructor for new events
 	public DemoGameEvent()
 	{
-		needsMonitor = false; // default
 		appEventType = AppEventType.DEMO_GAME_EVENT;
 	}
 	
-	// Format is:  type,ID,obj1ID,obj2ID,pos1x,pos1y,pos2x,pos2y
+	// Format is:  type,obj1ID,obj2ID,pos1x,pos1y,pos2x,pos2y
 	public void decodeString(String payload)
 	{
 		String[] eventFields = payload.split(",");
@@ -45,14 +58,11 @@ public class DemoGameEvent implements AppEvent
 			}
 		}
 		
-		if (gameEventType == DemoGameEventType.NEW_PROJECTILE)
-		{
-			needsMonitor = true;
-		}
 		
-		eventID = Integer.parseInt(eventFields[1]);
-		objectOneID = Integer.parseInt(eventFields[2]);
-		objectTwoID = Integer.parseInt(eventFields[3]);
+		
+		objectOneID = Integer.parseInt(eventFields[1]);
+		objectTwoID = Integer.parseInt(eventFields[2]);
+		objectThreeID = Integer.parseInt(eventFields[3]);
 		primaryPosition = new Point2D.Double(Double.parseDouble(eventFields[4]),
 							Double.parseDouble(eventFields[5]));
 		secondaryPosition = new Point2D.Double(Double.parseDouble(eventFields[6]),
@@ -65,10 +75,12 @@ public class DemoGameEvent implements AppEvent
 		gameEventType = DemoGameEventType.MOVE_AVATAR;
 		this.objectOneID = avatarID;
 		this.objectTwoID = -1;
+		this.objectThreeID = -1;
 		this.primaryPosition = destPos;
 		this.secondaryPosition = currPos;
 		this.eventID = eventID;
-		needsMonitor = false;
+		this.monitorWeight = 0;
+		
 	}
 	
 	public void setAsNewProjectileEvent(Integer parentID, Integer eventID,
@@ -76,11 +88,26 @@ public class DemoGameEvent implements AppEvent
 	{
 		gameEventType = DemoGameEventType.NEW_PROJECTILE;
 		this.objectOneID = parentID;
-		this.objectTwoID = projID;
+		this.objectTwoID = projID;		
+		this.objectThreeID = -1;
 		this.primaryPosition = destPos;
 		this.secondaryPosition = currPos;
 		this.eventID = eventID;
-		needsMonitor = true;
+		this.monitorWeight = 1;
+	}
+	
+	//event ID for collision event is never used
+	public void setAsCollisionEvent(Integer parentID, Integer eventID,
+			Integer projID,	Integer targetID)
+	{
+		gameEventType = DemoGameEventType.COLLISION;
+		this.objectOneID = parentID;
+		this.objectTwoID = projID;
+		this.objectThreeID = targetID;
+		this.primaryPosition = new Point2D.Double(0,0);
+		this.secondaryPosition =new Point2D.Double(0,0);
+		this.eventID = eventID;
+		this.monitorWeight = 0;
 	}
 	
 	public DemoGameEventType getType()
@@ -118,8 +145,8 @@ public class DemoGameEvent implements AppEvent
 	// serialization data format
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder(
-			objectOneID + "," + objectTwoID + "," +
+		StringBuilder sb = new StringBuilder(gameEventType+","+
+			objectOneID + "," + objectTwoID + "," +objectThreeID+","+
 			Double.toString(primaryPosition.getX()) + "," +
 			Double.toString(primaryPosition.getY()) + "," +
 			Double.toString(secondaryPosition.getX()) +	"," +
@@ -129,9 +156,6 @@ public class DemoGameEvent implements AppEvent
 		return sb.toString();
 	}
 
-	public boolean needsMonitor() {
-		return needsMonitor;
-	}
 	
 
 	public Integer getEventID() {
@@ -141,5 +165,23 @@ public class DemoGameEvent implements AppEvent
 
 	public void setEventID(Integer eventID) {
 		this.eventID = eventID;
+	}
+	
+	public void setMonitorWeight(Double weight){
+		monitorWeight = weight;
+	}
+	
+	public double getMonitorWeight(){
+		return monitorWeight;
+	}
+
+	
+
+	public void setObjectThreeID(Integer objectThreeID) {
+		this.objectThreeID = objectThreeID;
+	}
+
+	public Integer getObjectThreeID() {
+		return objectThreeID;
 	}
 }
