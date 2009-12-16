@@ -10,6 +10,7 @@ public class GameController
 	private GamePanel gPanel;
     private final int defaultWidth = 800;
     private final int defaultHeight = 600;
+	@SuppressWarnings("unused")
 	private boolean paused;
     private int localAvatarID = -1;
     private int currentEventID;
@@ -129,6 +130,21 @@ public class GameController
 
 	public void handleEventFromServer(DemoGameEvent event)
 	{
+		if(event.getType()==DemoGameEventType.MOVE_AVATAR){
+			gameStateManager.moveAvatar(event.getObjectOneID(),
+					event.getSecondaryPosition(), event.getPrimaryPosition() );
+		}
+		else if(event.getType()==DemoGameEventType.NEW_PROJECTILE){
+			gameStateManager.spawnProjectile(event.getObjectOneID(),event.getObjectTwoID(),
+					event.getPrimaryPosition(),event.getSecondaryPosition());
+		}
+		else if(event.getType()==DemoGameEventType.NEW_AVATAR){
+			gameStateManager.addPeer(event.getObjectOneID(),event.getPrimaryPosition());
+		}
+		else if(event.getType()==DemoGameEventType.COLLISION){
+			handleProjectilePeerCollision(event.getObjectThreeID(),
+					event.getObjectOneID(), event.getObjectTwoID());
+		}
 
 	}
 }
