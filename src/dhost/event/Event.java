@@ -11,6 +11,7 @@ public class Event
 	private AppEventType appEventType;
 	private AppEvent appEvent;
 	private Integer originID; // ID of event originator
+	private Integer eventID;
 	
 	// I'm not sure if monitors belong in the core event class
 	// They might be considered app-specific event data, although it is clear
@@ -19,7 +20,7 @@ public class Event
 	//
 	// note: NetworkState is involved in choosing monitors, based on load!
 	//
-	private boolean hasMonitors = false; // not all events register monitors
+	//private boolean hasMonitors = false; // not all events register monitors
 	private ArrayList<Integer> monitors; // list of assigned monitors
 	private double monitorWeight; // relative resource load of an events monitor
 	
@@ -48,12 +49,14 @@ public class Event
 
 	public Event(Integer originID)
 	{
+		monitors = new ArrayList<Integer>();
 		this.originID = originID;
 	}
 
 	private void decodeString(String payload)
 	{
-		String[] eventFields = payload.split("|");
+		
+		String[] eventFields = payload.split("#");
 
 		for (AppEventType typeName : AppEventType.values())
 		{
@@ -65,20 +68,21 @@ public class Event
 		}
 		
 		originID = new Integer(eventFields[1]);
+		eventID = new Integer(eventFields[2]);
 		
-		monitorWeight = Double.parseDouble(eventFields[2]);
+		monitorWeight = Double.parseDouble(eventFields[3]);
 		
 		// The actual list of monitors is comma-separated integers
-		if (eventFields[3].length() > 0)
+		if (eventFields[4].length() > 0)
 		{
-			hasMonitors = true;
+			//hasMonitors = true;
 			String[] monitorIDs = eventFields[4].split(",");		
 			for (String mid : monitorIDs)
 			{
 				monitors.add(Integer.parseInt(mid));
 			}
 
-			eventData = eventFields[4]; // remaining field is app event data
+			eventData = eventFields[5]; // remaining field is app event data
 		}
 	}
 	
@@ -101,8 +105,9 @@ public class Event
 		}
 		
 		StringBuilder sb = new StringBuilder(
-				appEventType + "|" + originID + "|" + monitorWeight + "|" +
-				monitorsList.toString() + "|" + appEvent.toString()
+				appEventType + "#" + originID +"#"+ eventID + "#" + monitorWeight + "#" +
+				monitorsList.toString() + "#" + 
+				appEvent.toString()
 				);
 		
 		return sb.toString();
@@ -116,6 +121,8 @@ public class Event
 
 	public void setAppEvent(AppEvent appEvent) {
 		this.appEvent = appEvent;
+		this.eventID = appEvent.getEventID();
+		this.monitorWeight = appEvent.getMonitorWeight();
 		this.appEventType = appEvent.getAppEventType();
 	}
 
@@ -133,21 +140,21 @@ public class Event
 	public void setMonitors(ArrayList<Integer> monitors) {
 		this.monitors = monitors;
 	}
+	
+	public ArrayList<Integer> getMonitors(){
+		return monitors;
+	}
 
 
 	public boolean getPeerMonitorResponsibility(Integer localPeerID)
 	{	
 		return monitors.contains(localPeerID);
 	}
-
-
-	public boolean needsMonitor()
-	{
-		if (appEvent != null)
-		{
-			return appEvent.needsMonitor();
-		}
-		else
-			return false;
+	
+	public double getMonitorWeight(){
+		return monitorWeight;
 	}
+
+
+	
 }
