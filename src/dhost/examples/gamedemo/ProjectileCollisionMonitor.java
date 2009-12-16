@@ -2,20 +2,27 @@ package dhost.examples.gamedemo;
 
 import java.util.HashMap;
 
+import dhost.event.Event;
+
 
 
 public class ProjectileCollisionMonitor implements Runnable{
+	private DemoGameEventMonitor demoGameEventMonitor;
 	private GameController gController;
 	private HashMap<Integer,PeerAvatar> players;
 	private Projectile myProjectile;
+	private Event event;//the general event type that this monitor was made to monitor
 	
-	public ProjectileCollisionMonitor(GameController _gController, Projectile proj){
+	public ProjectileCollisionMonitor(DemoGameEventMonitor dgev,Event event,GameController _gController, Projectile proj){
+		if(proj!=null){
+			this.event = event;
+			demoGameEventMonitor = dgev;
+			gController = _gController;
+			players=gController.getGameStateManager().getPlayerMap();
+			myProjectile = proj;
 		
-		gController = _gController;
-		players=gController.getGameStateManager().getPlayerMap();
-		myProjectile = proj;
-		
-		new Thread(this).start();
+			new Thread(this).start();
+		}
 	}
 	
 	public void run(){
@@ -31,7 +38,10 @@ public class ProjectileCollisionMonitor implements Runnable{
 						if(!p.getID().equals(myProjectile.getParentID())){
 							if(p.intersects(myProjectile.getRectangle2D())){
 								System.out.println("collision detected");
-								gController.handleProjectilePeerCollision(p.getID(),myProjectile.getParentID(), myProjectile.getID());
+								DemoGameEvent dGameEvent = new DemoGameEvent();
+								dGameEvent.setAsCollisionEvent(myProjectile.getParentID(),0,myProjectile.getID(),
+										p.getID());
+								demoGameEventMonitor.handleEventFromMonitor(event,dGameEvent);
 								done=true;
 								break;
 							}
