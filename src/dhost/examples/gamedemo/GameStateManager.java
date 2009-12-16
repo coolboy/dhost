@@ -54,6 +54,31 @@ public class GameStateManager {
 		
 	}
 	
+	public void spawnProjectile(Integer parentID, Integer projectileID, Point2D.Double dest, Point2D.Double start){
+		boolean playerExists =false;;
+		synchronized(players){
+			if(players.containsKey(parentID)){
+				playerExists = true;
+				players.get(parentID).setPosition(start);
+			}			
+		}
+		if(playerExists){
+			synchronized(projectiles){			
+				
+				if(projectiles.containsKey(parentID)){
+					projectiles.get(parentID).put(projectileID, new Projectile(this,projectileID,parentID,start,dest));
+				}
+				else{
+					projectiles.put(parentID, new HashMap<Integer,Projectile>());
+					projectiles.get(parentID).put(projectileID, new Projectile(this,projectileID,parentID,start,dest));
+				}
+			}
+		}
+		
+		
+		
+	}
+	
 	public boolean killProjectile(Integer parentID, Integer projectileID){
 		boolean returnVal = false;
 		synchronized(projectiles){
@@ -125,16 +150,15 @@ public class GameStateManager {
 		return returnVal;
 	}
 	
-	public Projectile getProjectile(Integer parentID, Integer projectileID) throws IndexOutOfBoundsException{
-		Projectile p;
+	public Projectile getProjectile(Integer parentID, Integer projectileID) {
+		Projectile p=null;
 		synchronized(projectiles){
 			if(projectiles.containsKey(parentID)){
 				if(projectiles.get(parentID).containsKey(projectileID)){
 					p = projectiles.get(parentID).get(projectileID);
 				}
-				else throw new IndexOutOfBoundsException();
+				
 			}
-			else throw new IndexOutOfBoundsException();
 		}
 		
 		
