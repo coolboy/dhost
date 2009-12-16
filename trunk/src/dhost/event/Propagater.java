@@ -1,6 +1,7 @@
 package dhost.event;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import dhost.net.MessageService;
 import dhost.net.MessageSubscriber;
@@ -18,6 +19,9 @@ public class Propagater implements MessageSubscriber
 	private MessageService msgService;
 	private MessageType SUBSCRIPTION_TYPE = MessageType.EVENT;
 	private EventHandler localEventHandler; // yes, just one for now..
+	private EventMonitor localEventMonitor;
+	private MonitorVoteHandler monitorVoteHandler;
+	private Random rand;
 
 	NetworkState netstate; // used to get info about current network status
 	
@@ -25,20 +29,37 @@ public class Propagater implements MessageSubscriber
 	{
 		this.netstate = netstate;
 		this.msgService = msgService;
-		
+		rand = new Random();
+		this.msgService.subscribe(this);
+		monitorVoteHandler = new MonitorVoteHandler(this);
 		myID = netstate.getLocalID();
 	}
 	
 	// used by client to originate an event out to the network
 	public boolean propagate(Event evt)
 	{
-		if (evt.needsMonitor())
-		{
+		//if (evt.needsMonitor())
+		//{
 			// do our algorithm to determine who gets monitors, then set this
 			// value in the event..
-			
+			//just set monitors for all events. if they have a monitor
+			//weight of zero they wont affect the running sums and theyll
+			//just get dropped by the monitors
 			evt.setMonitors(assignMonitors());
-		}
+			if (evt.getPeerMonitorResponsibility(myID))
+			{
+				System.out.println("telling local peer to monitor");
+				if(localEventMonitor!=null){
+					localEventMonitor.monitorEvent(evt);
+				}
+				else{
+					System.out.println("Error: Propogator's localEventMonitor never initialized.");
+				}
+				
+			}
+		//}
+		//else evt.setMonitors(new ArrayList<Integer>());
+		
 		
 		int[] outgoingIDs = netstate.getOutgoingPeerIDs();
 		NetworkMessage prepMsg;
@@ -46,7 +67,7 @@ public class Propagater implements MessageSubscriber
 		for(int i : outgoingIDs)
 		{
 			prepMsg = new NetworkMessage(
-					myID, myID, i, 0, SUBSCRIPTION_TYPE);
+					myID, i, myID, 0, SUBSCRIPTION_TYPE);
 			
 			prepMsg.setPayload(evt.toString());
 			
@@ -62,17 +83,36 @@ public class Propagater implements MessageSubscriber
 	// ** note that we also need to set up some sort of voting collaboration
 	// at some point along the way.. this is a separate network-level class
 	// that allows agreement on generic calculated values or states..
+	//just picks one random monitor, figure the netstate stuff will change anyway
 	private ArrayList<Integer> assignMonitors()
-	{
+	{	
+		ArrayList<Integer> peerIDs = netstate.getAllPeerIDs();
+		Integer monitor = peerIDs.get(rand.nextInt(peerIDs.size()));
+		peerIDs.clear();
+		peerIDs.add(monitor);
 		// TODO Auto-generated method stub
-		return null;
+		return peerIDs;
 	}
 
 	// handle incoming events
 	private boolean receiveEvent(Event evt)
 	{
 		// do local stuff with the event
-		localEventHandler.handleEvent(evt);
+		if(localEventHandler!=null){
+			localEventHandler.handleEvent(evt);
+		}
+		else{
+			System.out.println("Error: Propogator's localEventHandler never initialized.");
+		}
+		if (evt.getPeerMonitorResponsibility(myID))
+		{
+			if(localEventMonitor!=null){
+				localEventMonitor.monitorEvent(evt);
+			}
+			else{
+				System.out.println("Error: Propogator's localEventMonitor never initialized.");
+			}
+		}
 		
 		return true;
 	}
@@ -99,5 +139,19 @@ public class Propagater implements MessageSubscriber
 	
 	public void setLocalEventHandler(EventHandler localEventHandler) {
 		this.localEventHandler = localEventHandler;
+		monitorVoteHandler.setLocalEventHandler(localEventHandler);
+	}
+	public void setLocalEventMonitor(EventMonitor localEventMonitor){
+		this.localEventMonitor = localEventMonitor;
+	}
+
+	
+
+	public MonitorVoteHandler getMonitorVoteHandler() {
+		return monitorVoteHandler;
+	}
+	
+	public int getLocalID(){
+		return myID;
 	}
 }
