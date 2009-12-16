@@ -8,6 +8,7 @@ import java.util.Vector;
 import javax.swing.JPanel;
 
 import dhost.app.GameApp;
+import dhost.event.EventHandler;
 import dhost.event.Propagater;
 
 public class DemoGameApp implements GameApp{
@@ -21,16 +22,19 @@ public class DemoGameApp implements GameApp{
     
     public DemoGameApp(Propagater propagater, ArrayList<Integer> peerIDs, Integer localPeerID){
     	this.propagater= propagater;
+    	server = new DServer(this.propagater);
+    	server.setLocalPeerID(localPeerID);
     	this.peerIDs = peerIDs;
     	this.localPeerID = localPeerID;
     }
 	// Start the game logic (ie. may be headless for simulation)
 	public void startGame(){
-		server = new DServer(propagater);
+		
 		Vector<Integer> peervect = new Vector<Integer>();
 		peervect.addAll(peerIDs);
 		gController = new GameController();
 		gController.setServer(server);
+		server.setGameController(gController);
 		gController.spawnLocalAvatar(localPeerID,new Point2D.Double(200,200));
 		for(Integer i: peerIDs){
 			gController.spawnPeerAvatar(i, new Point2D.Double(200,200));
@@ -57,6 +61,10 @@ public class DemoGameApp implements GameApp{
 	
 	public JPanel getPanel(){
 		return gController.getGamePanel();
+	}
+	
+	public EventHandler getEventHandler(){
+		return server;
 	}
 
 }
