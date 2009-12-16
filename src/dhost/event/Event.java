@@ -24,7 +24,7 @@ public class Event
 	private ArrayList<Integer> monitors; // list of assigned monitors
 	private double monitorWeight; // relative resource load of an events monitor
 	
-	private String eventData; // raw string data for the app event to process
+	private String appEventData; // raw string data for the app event to process
 	
 	
 	/**
@@ -43,7 +43,7 @@ public class Event
 		// Create an app event of the correct type, if specified.
 		if (appEventType != null)
 		{
-			appEvent = AppEventFactory.createEvent(appEventType, eventData);
+			appEvent = AppEventFactory.createEvent(appEventType, appEventData);
 		}
 	}
 
@@ -82,7 +82,7 @@ public class Event
 				monitors.add(Integer.parseInt(mid));
 			}
 
-			eventData = eventFields[5]; // remaining field is app event data
+			appEventData = eventFields[5]; // remaining field is app event data
 		}
 	}
 	

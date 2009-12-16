@@ -1,6 +1,7 @@
 package dhost.event;
 
 import java.util.ArrayList;
+import java.util.Vector;
 import java.util.Random;
 
 import dhost.net.MessageService;
@@ -61,18 +62,13 @@ public class Propagater implements MessageSubscriber
 		//else evt.setMonitors(new ArrayList<Integer>());
 		
 		
-		int[] outgoingIDs = netstate.getOutgoingPeerIDs();
-		NetworkMessage prepMsg;
+		NetworkMessage prepMsg = new NetworkMessage(myID, 0, myID, 0,
+									SUBSCRIPTION_TYPE);
+			
+		prepMsg.setPayload(evt.toString());
 		
-		for(int i : outgoingIDs)
-		{
-			prepMsg = new NetworkMessage(
-					myID, i, myID, 0, SUBSCRIPTION_TYPE);
-			
-			prepMsg.setPayload(evt.toString());
-			
-			msgService.sendMessage(prepMsg);
-		}
+		// use MessageService to broadcast event to all peers
+		msgService.sendP2PBroadcast(prepMsg);
 		
 		return true;
 	}
@@ -117,23 +113,18 @@ public class Propagater implements MessageSubscriber
 		return true;
 	}
 	
-	
 	/** 
-	 * Handles an incoming NetworkMessage of type EVENT
+	 * subscription method handles an incoming EVENT message
 	*/
 	@Override
 	public void deliver(NetworkMessage message)
-	{
-		// use NetworkMap to see if we need further propagation..
-		
-		// then hand off for further processing
+	{	
 		// extract and de-marshall the event from message payload..
 		receiveEvent(new Event(message.getPayload()));	
-		
 	}
 
 	@Override
-	public MessageType getType() {
+	public MessageType getMessageSubscriptionType() {
 		return SUBSCRIPTION_TYPE;
 	}
 	
