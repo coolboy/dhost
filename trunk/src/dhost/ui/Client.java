@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import dhost.app.GameApp;
 import dhost.event.Propagater;
+import dhost.examples.gamedemo.DemoGame;
 import dhost.examples.gamedemo.DemoGameApp;
 import dhost.net.*;
 import dhost.state.Updater;
@@ -51,8 +52,10 @@ public class Client
 		// if (networkScheme == 1)
 		NetworkMap netmap = new NetworkMap(peers.values());
 		
+		
 		// Initialize NetworkState
 		NetworkState netstate = new NetworkState(netmap,peers);
+		netstate.setLocalID(localPeerID);
 		
 		// Initialize Event Propagater and State Updater
 		/* NOTE:  I think the game code only needs to see these two..
@@ -63,17 +66,19 @@ public class Client
 		 * even a network failure is delivered via an event like "pause" etc.
 		 */
 		Propagater eventPropagater = new Propagater(netstate, messageSvc);
-		Updater stateUpdater = new Updater(netstate, messageSvc);
+		//Updater stateUpdater = new Updater(netstate, messageSvc);
 
 		
 		// TODO: Select a game.. an implementation of GameApp..
 		//must set localPeerID before calling this
-		GameApp myGame = new DemoGameApp(eventPropagater,peerIDs,localPeerID);
 		
+		GameApp myGame = new DemoGameApp(eventPropagater,peerIDs,localPeerID);
+		eventPropagater.setLocalEventHandler(myGame.getEventHandler());
+		myGame.startGame();
 		// Initialize the desired user interface
 		// TODO: implement these
 		if (mode == 1)
-			// new SwingUserInterface(GameApp);
+			new DemoGame(myGame);
 		if (mode == 2)
 			// new SimulationUserInterface(GameApp, readRatio, simDelay);
 		
@@ -131,6 +136,7 @@ public class Client
 				int peerPort = Integer.parseInt(dataLine[2]);
 				
 				Peer thisPeer = new Peer(peerAddr,peerID,peerPort);
+				System.out.println("adding peer to list "+thisPeer.toString());
 				parsedPeers.put(peerID, thisPeer);
 			}
 		}
