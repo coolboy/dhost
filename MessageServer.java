@@ -3,14 +3,17 @@ package dhost.net;
 import java.io.*;
 import java.net.*;
 
-/* A trivial multi-threaded socket server */
+/* A trivial multi-threaded socket server
+ * All it does is wait for new socket connections and spins off
+ * ConnectionHandler threads.. */
+// TODO: rename.. Message makes no sense now
 public class MessageServer implements Runnable
 {
 	public final int PORT;
 	
 	private boolean shutdown = false;
+	private NetworkState netstate;
 	private ServerSocket listener;
-	private MessageService service;
 	
 	public void shutdown()
 	{
@@ -23,18 +26,10 @@ public class MessageServer implements Runnable
 		}
 	}
 	
-	public MessageServer(int port, MessageService service)
+	public MessageServer(NetworkState netstate)
 	{
-		this.PORT = port;
-		this.service = service;	
-	}
-	
-	public void processInput(String input)
-	{
-		// Use the wire-format convenience constructor to create a message
-		// then return it to the service
-		NetworkMessage msg = new NetworkMessage(input);
-		service.receiveMessage(msg);
+		this.PORT = netstate.getLocalPort();
+		this.netstate = netstate;
 	}
 
 	public void run()
@@ -42,16 +37,17 @@ public class MessageServer implements Runnable
 		try 
 		{
 			listener = new ServerSocket(PORT);
-			Socket server;
+			Socket newSocket;
 			System.out.println("Opened message listener on port: " + PORT);
 
-			while(!shutdown) 
+			while(!shutdown)
 			{
-				// Blocks until a connection occurs, then creates new handler
-				server = listener.accept();
-				if (server != null)
+				// Blocks until a connection occurs, then creates new thread
+				newSocket = listener.accept();
+				if (newSocket != null)
 				{
-					ConnectionHandler ch = new ConnectionHandler(server,this);
+					ConnectionHandler ch =
+						new ConnectionHandler(newSocket,netstate);
 					Thread t = new Thread(ch);
 					t.start();
 				}

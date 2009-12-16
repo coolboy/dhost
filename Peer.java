@@ -70,7 +70,4 @@ public class Peer implements Comparable<Peer>
 			return 1;
 		else return 0;
 	}
-	public String toString(){
-		return "PeerID: "+peerID+" port num: "+portNumber;
-	}
 }

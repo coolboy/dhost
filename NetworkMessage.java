@@ -1,22 +1,12 @@
 package dhost.net;
 
-// TODO: This should be refactored to an implementation a generic message iface
 public class NetworkMessage
-{
-	// TODO: better docs here
-	/* Message Types:
-	 * STATECHANGE	state change replication message
-	 * EVENT		event replication message
-	 * NETCHANGE	network change replication message (ex. dropped peer)
-	 * STATESYNC	state sync message (used in re-sync new/lost peer)
-	 * RESOLVE		state resolve request/reply (currently unused)
-	 * INIT			peer initialization message (currently unused)
-	 * 
-	 */
-	
+{	
 	private int originPeerID;
 	private int sourcePeerID;
 	private int destinationPeerID;
+	private int forwardingPeerID; // optional peer to forward message through
+	private boolean hasForwardingPeer;
 	private long logicalClock;
 	private MessageType messageType;
 	private String payload; // serialized data used by some message types
@@ -34,19 +24,19 @@ public class NetworkMessage
 	 */
 	
 	// TODO: logical clock is optional for our uses, but it may be useful when
-	// we get around to doing conflict resolution stuff, as a "tie breaker" 
-	
+	// we get around to doing conflict resolution stuff, as a "tie breaker"
 	public NetworkMessage(int sourcePeerID, int destinationPeerID,
 						  int originPeerID,	long logicalClock,
 						  MessageType msgType)
 	{
-		super();
 		this.destinationPeerID = destinationPeerID;
 		this.sourcePeerID = sourcePeerID;
 		this.originPeerID = originPeerID;
 		this.logicalClock = logicalClock;
 		this.messageType = msgType;
 		this.payload = new String();
+		hasForwardingPeer = false;
+		forwardingPeerID = 0;
 	}
 
 	/**
@@ -80,6 +70,20 @@ public class NetworkMessage
 
 	public int getOriginPeerID() {
 		return originPeerID;
+	}
+
+	public int getForwardingPeerID() {
+		return forwardingPeerID;
+	}
+	
+	public boolean hasForwardingPeer() {
+		return hasForwardingPeer;
+	}
+
+	public void setForwardingPeerID(int forwardingPeerID)
+	{
+		hasForwardingPeer = true;
+		this.forwardingPeerID = forwardingPeerID;
 	}
 
 	public long getTimeOfMessage() {

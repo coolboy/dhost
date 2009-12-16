@@ -2,14 +2,13 @@ package dhost.net;
 
 import java.util.*;
 import java.lang.Math;
-import java.net.UnknownHostException;
 
 /**
  * This class is constructed on any Collection of Peer objects. The following
- * method is used to determine where to send a broadcast message:
+ * method is used to determine where to send a message:
  * 
  * Vector<Integer> getDestinationVector(Integer thisPeerID, Integer
- * precedingHopPeerID, Integer msgOriginPeerID)
+ * msgSenderPeerID, Integer msgOriginPeerID)
  * 
  * It takes three peer ID's as arguments, and returns a vector of the peer ID's
  * that the message should be sent to. The input arguments are, in order, the
@@ -17,13 +16,6 @@ import java.net.UnknownHostException;
  * the local peer, and the peer ID of the peer the message originated at. Two or
  * more can be the same peer ID, for example if the local peer is the origin of
  * the message, all three arguments will be the same.
- * 
- * The following method is used to determine the ID of the peer to forward a unicast
- * message to, assuming you are not the destination:
- * 
- * Integer getNextHop(Integer localPeerID, Integer destinationPeerID)
- * 
- * the method signature is self explanatory. Returns the peer ID of next hop.
  * 
  * also contains public function:
  * 
@@ -33,8 +25,6 @@ import java.net.UnknownHostException;
  * identical maps this needs to be called by all peers simultaneously
  * 
  */
-// TODO:  Lets give this a more descriptive name
-@SuppressWarnings("unused")
 public class NetworkMap
 {
 	// vector of Peers in the network
@@ -82,7 +72,6 @@ public class NetworkMap
 		// choose number of groups (and nodes per group) to be
 		// the truncated-to-int square root of total number of peers
 		int numberOfGroups = (int)Math.sqrt((double)peerVector.size());
-		//System.out.println("number of groups: "+numberOfGroups);
 		peerGroups = new Vector<Vector<Integer>>(numberOfGroups);
 
 		for(int i = 0; i < numberOfGroups; i++)
@@ -96,7 +85,7 @@ public class NetworkMap
 	 
 	/** assigns the rounded-down-square-root of N peers to each group, then
 	 *  round robin's the remaining nodes, which will be no more than 2 more
-	 *  peers per group. also fills in the HashMap that maps peerIDs to group
+	 *  peers per group also fills in the HashMap that maps peerIDs to group
 	 *  numbers
 	 */
 	private void assignSqrtNPeerGroups()
@@ -112,7 +101,6 @@ public class NetworkMap
 				peerGroups.get(i).add(peerVector.get(peerVectorIndex).getID());
 				IDtoGroupNumMap.put(peerVector.get(peerVectorIndex).getID(),
 								new Integer(i));
-				//System.out.println("Mapping ID: "+peerVector.get(peerVectorIndex).getID()+" to group: "+i);
 				peerVectorIndex++;
 			}
 		}
@@ -125,7 +113,6 @@ public class NetworkMap
 					add(peerVector.get(peerVectorIndex).getID());
 			IDtoGroupNumMap.put(peerVector.get(peerVectorIndex).getID(),
 					new Integer(peerGroupsIndex%peerGroups.size()));
-			//System.out.println("Mapping ID: "+peerVector.get(peerVectorIndex).getID()+" to group: "+peerGroupsIndex%peerGroups.size());
 			peerVectorIndex++;
 			peerGroupsIndex++;
 		}
@@ -182,32 +169,26 @@ public class NetworkMap
 		return lowestLoadID;
 	}
 	 
-	/*Returns true if the the two peers are in the same group, false otherwise.
-	 * returns true if the same peer ID is given twice.
-	 * Returns false if one of the given peer IDs are not valid.
-	 */
 	public boolean peersAreInSameGroup(Integer peerAID, Integer peerBID)
 	{
-		if(!IDtoIndex.containsKey(peerAID)||!IDtoIndex.containsKey(peerBID)){
-			return false;
-		}
 		return IDtoGroupNumMap.get(peerAID).equals(IDtoGroupNumMap.get(peerBID));
 	}
 
 	/**
-	 * BROADCAST routing function:
 	 * Method that is essentially the whole point of this class. It serves as
-	 * the routing function for a given message. Takes the peerID of the local
-	 * peer who is calling the function, the peerID of the
-	 * peer whom the message was received from, and the peerID of 
-	 * the peer who originally generated the message. 
+	 * the routing function for a given message. Takes the peerID of the peer
+	 * that received a message and is calling the function, the peerID of the
+	 * peer whom the message was received from, and the peerID of the peer who
+	 * originally generated the message.
+	 * 
+	 * If called with arguments (localID,localID,localID), this method will
+	 * return a list of those connections which should be persistent.
 	 */
 	public Vector<Integer> getDestinationVector(
 		Integer thisPeerID, Integer msgSenderPeerID, Integer msgOriginPeerID)
 	{
-		
 		Vector<Integer> destVector = new Vector<Integer>();
-		
+
 		if (thisPeerID.equals(msgOriginPeerID))
 		{
 			destVector.addAll(peerGroups.get(IDtoGroupNumMap.get(thisPeerID)));
@@ -270,66 +251,13 @@ public class NetworkMap
 		}
 	}
 	
-	/*Unicast routing function, used for sending messages to a single destination
-	 * through the connections in the tree structure. Returns the Integer peer ID
-	 * of the next hop (the peer the message should be forwarded to) given the 
-	 * local peer ID, and the peer ID of the final destination. returns a -1
-	 * on error.
-	 */
-	public Integer getNextHop(Integer localPeerID, Integer destinationPeerID){
-		Integer nextHop = -1;//default return value, indicates an error
-		if(!IDtoIndex.containsKey(localPeerID)){
-			System.out.println("Error: NetworkMap.getNextHop called with unknown\n"+
-					"local peer ID: "+ localPeerID);
-			return nextHop;
-		}
-		else if(!IDtoIndex.containsKey(destinationPeerID)){
-			System.out.println("Error: NetworkMap.getNextHop called with unknown\n"+
-					"destination peer ID: "+ destinationPeerID);
-			return nextHop;
-		}
-		else{
-			if(peersAreInSameGroup(localPeerID,destinationPeerID)){
-				return destinationPeerID;
-			}
-			else{
-				Integer localPeerGroupNum = IDtoGroupNumMap.get(localPeerID);
-				
-				
-				//see if localPeer is directly connected to destinationPeer's group:
-				for(Integer peerID: interGroupConnections.get(localPeerID)){
-					if(peersAreInSameGroup(peerID,destinationPeerID)){
-						return peerID;
-					}
-				}
-				//if localPeer is not connection to destinationGroup,
-				//find which peer in localGroup is connected to destinationGroup
-				Vector<Integer> localGroup = peerGroups.get(localPeerGroupNum);
-				for(Integer peerID: localGroup){
-					for(Integer destID:interGroupConnections.get(peerID)){
-						if(peersAreInSameGroup(destID,destinationPeerID)){
-							return peerID;
-						}
-					}
-				}
-				
-			}
-			
-		
-		}
-		
-		
-		
-		return nextHop;
-	}
-	
 	/*
 	 public static void main(String[] args){
 		 try{
-		 int numPeers = 4;//Integer.parseInt(args[1]);
-			//Random rand = new Random();
+		 int numPeers = 13376;//Integer.parseInt(args[1]);
+			Random rand = new Random();
 			ArrayList<Peer> peers = new ArrayList<Peer>();
-			for(int i =0 ;i <numPeers; i++){
+			for(int i = 0;i < numPeers; i++){
 
 				peers.add(new Peer("localhost",i));
 
@@ -337,20 +265,12 @@ public class NetworkMap
 
 			NetworkMap nmap = new NetworkMap(peers);
 			nmap.printGroup(0);
-			Vector<Integer> dest = nmap.getDestinationVector(0,0,0);
-			for(int i : dest){
-				System.out.println("dest: "+i);
-			}
-			System.out.println();
-			System.out.println("next hop from 0 to 1: "+ nmap.getNextHop(0, 1));
-			System.out.println("next hop from 1 to 3: "+ nmap.getNextHop(1, 3));
-			System.out.println("next hop from 54 to 57: "+ nmap.getNextHop(54, 57));
-			
-			
+			nmap.removePeerFromMap(peers.get(0).getID());
+			System.out.println("group 0 after remove:\n");
+			nmap.printGroup(0);
 		 }
 		 catch(UnknownHostException e){
 			 System.out.println("unknown host exception");
 		 }
-	 }
-	 */
+	 }*/
 }
