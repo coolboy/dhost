@@ -9,21 +9,30 @@ import dhost.event.Propagater;
 public class DServer implements EventHandler
 {
 	private GameController gController;
+	private DemoGameEventMonitor dgev;
 	private Propagater propagater;
 	private Integer localPeerID;
 	
 	public DServer(Propagater p)
 	{
 		propagater = p;
+		propagater.setLocalEventHandler(this);
+		
 	}
 	
 	public void handleEventFromClient(DemoGameEvent gameEvent)
 	{
-		// Package our DemoGameEvent into a full event, then propagate it..
-		Event event = new Event(localPeerID);
-		event.setAppEvent(gameEvent);
+		if(localPeerID==null){
+			System.out.println("Error: DServer localPeerID not initialized. "+
+					"Event propagation failed.");
+		}
+		else{
+			// Package our DemoGameEvent into a full event, then propagate it..
+			Event event = new Event(localPeerID);
+			event.setAppEvent(gameEvent);
 		
-		propagater.propagate(event);
+			propagater.propagate(event);
+		}
 	}
 	
 	// Propagator calls this to pass an incoming message along..
@@ -40,16 +49,18 @@ public class DServer implements EventHandler
 		// TODO: need some error handling here..
 		
 		gController.handleEventFromServer(dge);
-		
+		/*
 		if (event.getPeerMonitorResponsibility(localPeerID))
 		{
 			monitorEvent(dge);
-		}
+		}*/
 	}
 	
 	public void setGameController(GameController g)
 	{
 		gController = g;
+		dgev = new DemoGameEventMonitor( gController,propagater);
+		propagater.setLocalEventMonitor(dgev);
 	}
 	
 	public void setLocalPeerID(Integer id)
@@ -69,8 +80,8 @@ public class DServer implements EventHandler
 		//TODO implement monitor assignment/management algorithm
 	}
 	*/
-	
-	private void monitorEvent(DemoGameEvent gameEvent)
+	/*
+	public void monitorEvent(DemoGameEvent gameEvent)
 	{
 		if (gameEvent.getType() == DemoGameEventType.NEW_PROJECTILE)
 		{
@@ -79,4 +90,23 @@ public class DServer implements EventHandler
 				 gameEvent.getObjectOneID(),gameEvent.getObjectTwoID()));
 		}
 	}
+	public void monitorEvent(Event event)
+	{
+		DemoGameEvent gameEvent = null;
+		AppEvent ae = event.getAppEvent();
+		if (ae instanceof DemoGameEvent)
+		{
+			gameEvent = (DemoGameEvent)ae;
+		}
+		
+		if (gameEvent.getType() == DemoGameEventType.NEW_PROJECTILE)
+		{
+			System.out.println("monitoring event:");
+			System.out.println(gameEvent.toString());
+			new ProjectileCollisionMonitor(gController,
+				gController.getGameStateManager().getProjectile(
+				 gameEvent.getObjectOneID(),gameEvent.getObjectTwoID()));
+		}
+	}
+	*/
 }
