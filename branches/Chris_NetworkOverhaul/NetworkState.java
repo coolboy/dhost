@@ -17,9 +17,9 @@ import java.util.Vector;
 /* TODO: Some of this stuff should be moved to package scope since it is in
  * inappropriate outside of dhost.net
  *
- * Also, we'd probably want to factor out a ConnectionPool or something
+ * TODO: Also, we'd probably want to factor out a ConnectionPool or something
  */
-public class NetworkState implements MessageSubscriber
+public class NetworkState implements MessageSubscriber 
 {
 	// INITIALIZING state will be set until all outgoingPeerIDs have running
 	// network connections
