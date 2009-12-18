@@ -53,7 +53,7 @@ public class Client
 		
 		
 		// Initialize NetworkState
-		NetworkState netstate = new NetworkState(peers);
+		NetworkState netstate = new NetworkState(peers,messageSvc);
 		netstate.setLocalID(localPeerID);
 		
 		// Initialize Event Propagater and State Updater
