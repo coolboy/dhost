@@ -158,6 +158,40 @@ public class MessageService
 		}
 	}
 	
+	/**
+	 * Log a plain message to the stats server
+	 */
+	public void sendStatLog(String logMessage)
+	{
+		if (statsEnabled)
+		{
+			PrintWriter output = null;
+			
+			try
+			{
+				// Establish connection
+				InetAddress addr = InetAddress.getByName(statsServerIP);
+				Socket socket = new Socket(addr, statsServerPort);
+
+				output = new PrintWriter(new BufferedWriter(
+						new OutputStreamWriter(socket.getOutputStream())),true);
+
+				// Encode the stat in wire format and send it
+				output.println(myID + "," + 4 + "," + logMessage);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Problem sending stat");
+				e.printStackTrace();
+			}
+			finally
+			{
+				if (output != null)
+					output.close();
+			}
+		}
+	}
+	
 	public void shutdown()
 	{
 		ms.shutdown();

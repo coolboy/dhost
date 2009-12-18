@@ -26,8 +26,8 @@ public class StatsKeeper
 	private ServerSocket s;
 	private Socket socket;
 	
-	private int stateSends = 0;
-	private int stateReceives = 0;
+	private int monitorStarts = 0;
+	private int votesCounted = 0;
 	
 	private int totalMsgSeen = 0;
 	private static boolean debug = false;
@@ -42,9 +42,8 @@ public class StatsKeeper
 		System.out.println("StatsKeeper started: \n" + s);
 
 		logMessage = "Total Messages Seen / " +
-			"State change sends / " + 
-			"State change receives / " +
-			"Init and Resolve";
+			"Event monitors started / " + 
+			"Votes counted";
 		
 		outFile.println(logMessage);
 		System.out.println("LOG format: " + logMessage);
@@ -75,17 +74,17 @@ public class StatsKeeper
 					if (type == 1)
 					{
 						if (debug)
-						System.out.println("Received state send stat from "
+						System.out.println("Received monitor start stat from "
 								+ dataLine[0] + " with value: " + dataLine[2]);
-						stateSends++;
+						monitorStarts++;
 						
 					}
 					else if (type == 2)
 					{
 						if (debug)
-						System.out.println("Received state received stat from "
+						System.out.println("Received vote counted stat from "
 								+ dataLine[0] + " with value: " + dataLine[2]);
-						stateReceives++;
+						votesCounted++;
 					}
 					// Other messages received
 					else if (type == 3)
@@ -96,8 +95,16 @@ public class StatsKeeper
 						
 						System.out.print("*");
 					}
+					// String log message
+					else if (type == 4)
+					{
+						System.out.println("Log message from " + dataLine[0]
+						         + ": " + dataLine[2]);
+						
+					}
 					
-					totalMsgSeen++;
+					if (type != 4)
+						totalMsgSeen++;
 					
 					// Every MESSAGES_PER_LOG_ENTRY messages, write stats to log
 					if (totalMsgSeen % MESSAGES_PER_LOG_ENTRY == 0 &&
@@ -105,8 +112,8 @@ public class StatsKeeper
 					{
 						// TODO: nice formatting
 						logMessage = totalMsgSeen + " / " +
-									stateSends + " / " + 
-									stateReceives;
+									monitorStarts + " / " + 
+									votesCounted;
 						
 						outFile.println(logMessage); // TODO: why not work?!
 						outFile.flush();
