@@ -21,14 +21,15 @@ public class NetworkState
 	NetworkMap netmap;
 	
 	// Initialize the network state tracking stuff
-	public NetworkState(NetworkMap netmap, HashMap<Integer,Peer> peers)
+	public NetworkState(HashMap<Integer,Peer> peers)
 	{
 		/* we'll want to start a connection drop detector in a new thread..
 		 * this will ping persistent connections after some timeout of
 		 * inactivity to make sure the remote host is still available.
 		 */
-		this.netmap = netmap;
+		
 		this.peers = peers;
+		this.netmap = new NetworkMap(this.peers.values());
 		networkStatus = NetStatus.GOOD;
 	}
 	public void setLocalID(int ID){
@@ -56,6 +57,12 @@ public class NetworkState
 		return ids;
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public Vector<Integer> getBroadcastDestinationVector(Integer thisPeerID, 
+			Integer  precedingHopPeerID, Integer msgOriginPeerID)
+	{
+		return netmap.getDestinationVector(thisPeerID,precedingHopPeerID,msgOriginPeerID);			
 	}
 	
 	public ArrayList<Integer> getAllPeerIDs(){
