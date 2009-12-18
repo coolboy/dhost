@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 
 import dhost.app.GameApp;
@@ -12,10 +11,10 @@ import dhost.event.Propagater;
 import dhost.examples.gamedemo.DemoGame;
 import dhost.examples.gamedemo.DemoGameApp;
 import dhost.net.*;
-import dhost.state.Updater;
 
 public class Client
 {
+	@SuppressWarnings("unused")
 	private static String GAME_DB; // game state on disk? (maybe not use..)
 	private static String PEERLIST_DB;
 	
@@ -24,6 +23,7 @@ public class Client
 	// private static int networkScheme = 0;  // right now only one scheme..
 	private static String statServerIP = "";
 	private static int statServerPort = 0;
+	@SuppressWarnings("unused")
 	private static float readRatio = 0;
 	private static int messageDelay = 0;
 	private static int simDelay = 0;
@@ -50,11 +50,10 @@ public class Client
 		// Initialize the requested distributed network structure 
 		// Refactor this to an interface "PeerNetworkScheme" or something
 		// if (networkScheme == 1)
-		NetworkMap netmap = new NetworkMap(peers.values());
 		
 		
 		// Initialize NetworkState
-		NetworkState netstate = new NetworkState(netmap,peers);
+		NetworkState netstate = new NetworkState(peers);
 		netstate.setLocalID(localPeerID);
 		
 		// Initialize Event Propagater and State Updater
@@ -158,6 +157,7 @@ public class Client
 		boolean hasPeerID = false;
 		boolean hasScheme = true; // unused.. one default value
 		boolean hasStatServer = false;
+		@SuppressWarnings("unused")
 		boolean hasMessageDelay = false;
 		boolean hasDBFile = false;
 		boolean hasPeerListPath = false;

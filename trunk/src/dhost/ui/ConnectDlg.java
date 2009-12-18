@@ -10,6 +10,7 @@ package dhost.ui;
  *
  * @author  __USER__
  */
+@SuppressWarnings("serial")
 public class ConnectDlg extends javax.swing.JDialog {
 
 	/** Creates new form ConnectDlg */
@@ -52,6 +53,7 @@ public class ConnectDlg extends javax.swing.JDialog {
 
 	private void goBActionPerformed(java.awt.event.ActionEvent evt) {
 		// TODO add your handling code here:
+		@SuppressWarnings("unused")
 		String addr = this.goB.getText();
 	}
 
