@@ -16,6 +16,7 @@ import dhost.examples.gamedemo.*
  *
  * @author  __USER__
  */
+@SuppressWarnings({ "unused", "serial" })
 public class Scene extends javax.swing.JFrame {
 
 	/** Creates new form Scene */
