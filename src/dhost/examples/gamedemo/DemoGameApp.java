@@ -18,6 +18,9 @@ public class DemoGameApp implements GameApp{
     private Propagater propagater;
     private ArrayList<Integer> peerIDs;
     private Integer localPeerID;
+    private long startTime;
+    
+    
     
     
     public DemoGameApp(Propagater propagater, ArrayList<Integer> peerIDs, Integer localPeerID){
@@ -26,6 +29,8 @@ public class DemoGameApp implements GameApp{
     	server.setLocalPeerID(localPeerID);
     	this.peerIDs = peerIDs;
     	this.localPeerID = localPeerID;
+    	
+    	
     }
 	// Start the game logic (ie. may be headless for simulation)
 	public void startGame(){
@@ -34,10 +39,17 @@ public class DemoGameApp implements GameApp{
 		peervect.addAll(peerIDs);
 		gController = new GameController();
 		gController.setServer(server);
+		gController.initHitStatsMap(peerIDs);
 		server.setGameController(gController);
 		gController.spawnLocalAvatar(localPeerID,new Point2D.Double(200,200));
 		for(Integer i: peerIDs){
 			gController.spawnPeerAvatar(i, new Point2D.Double(200,200));
+		}
+		startTime = System.currentTimeMillis();
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -46,7 +58,10 @@ public class DemoGameApp implements GameApp{
 		Random rand = new Random();
 		int xpos = rand.nextInt(700);
 		int ypos = rand.nextInt(500);
-		if(rand.nextInt(1000)<800){
+		if((System.currentTimeMillis()- startTime) < 10000 ){
+			gController.mouseButton1(new Point2D.Double(xpos,ypos));
+		}
+		else if(rand.nextInt(1000)<500){
 			gController.mouseButton1(new Point2D.Double(xpos,ypos));
 		}
 		else{
@@ -56,7 +71,7 @@ public class DemoGameApp implements GameApp{
 	
 	// Get a string describing the status of the game app (for debugging)
 	public String getStatus(){
-		return "";
+		return propagater.getStatus();
 	}
 	
 	public JPanel getPanel(){
@@ -66,5 +81,6 @@ public class DemoGameApp implements GameApp{
 	public EventHandler getEventHandler(){
 		return server;
 	}
+	
 
 }
