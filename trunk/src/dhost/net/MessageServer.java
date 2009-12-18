@@ -11,6 +11,7 @@ public class MessageServer implements Runnable
 	private boolean shutdown = false;
 	private ServerSocket listener;
 	private MessageService service;
+	private DatagramSocket listenSocket;
 	
 	public void shutdown()
 	{
@@ -27,6 +28,12 @@ public class MessageServer implements Runnable
 	{
 		this.PORT = port;
 		this.service = service;	
+		try{
+			listenSocket = new DatagramSocket(port);
+		}
+		catch(Exception e){
+			System.out.println("Server socket binding failed.");
+		}
 	}
 	
 	public void processInput(String input)
@@ -39,6 +46,22 @@ public class MessageServer implements Runnable
 
 	public void run()
 	{
+		
+		byte[] buf = new byte[2000];
+		DatagramPacket receivePacket = new DatagramPacket(buf,2000);
+		while(true){
+			try{
+			listenSocket.receive(receivePacket);
+			NetworkMessage msg = new NetworkMessage(new String(receivePacket.getData(),0,receivePacket.getLength()));
+			service.receiveMessage(msg);
+			}
+			catch(Exception e){
+				System.out.println("packet reception failed");
+			}
+			
+			
+		}
+		/*
 		try 
 		{
 			listener = new ServerSocket(PORT);
@@ -71,7 +94,7 @@ public class MessageServer implements Runnable
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 	}
 
 	public boolean isRunning() {
