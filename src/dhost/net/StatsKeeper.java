@@ -107,14 +107,14 @@ public class StatsKeeper
 						totalMsgSeen++;
 					
 					// Every MESSAGES_PER_LOG_ENTRY messages, write stats to log
-					if (totalMsgSeen % MESSAGES_PER_LOG_ENTRY == 0 &&
-							type == 3)
+					if (totalMsgSeen % MESSAGES_PER_LOG_ENTRY == 0)
 					{
 						// TODO: nice formatting
-						logMessage = totalMsgSeen + " / " +
+						logMessage = ""+totalMsgSeen + " / " +
 									monitorStarts + " / " + 
 									votesCounted;
-						
+					
+						System.out.println(logMessage);
 						outFile.println(logMessage); // TODO: why not work?!
 						outFile.flush();
 						
@@ -127,7 +127,7 @@ public class StatsKeeper
 				{ System.out.println("Wacky problem with client" + e1); }
 				finally
 				{
-					System.out.println("Closing connection");
+					//System.out.println("Closing connection");
 					socket.close();
 					outFile.close();
 				}

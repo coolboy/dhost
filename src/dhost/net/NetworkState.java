@@ -16,21 +16,24 @@ public class NetworkState
 
 	int[] outgoingPeerIDs = null;
 	private NetStatus networkStatus = NetStatus.INITIALIZING;
+	MessageService messageService;
+	NetworkMapManager netmapManager;
 	private int localID;
 	HashMap<Integer,Peer> peers;
 	NetworkMap netmap;
 	
 	// Initialize the network state tracking stuff
-	public NetworkState(HashMap<Integer,Peer> peers)
+	public NetworkState(HashMap<Integer,Peer> peers,MessageService messageService)
 	{
 		/* we'll want to start a connection drop detector in a new thread..
 		 * this will ping persistent connections after some timeout of
 		 * inactivity to make sure the remote host is still available.
 		 */
-		
+		this.messageService = messageService;
 		this.peers = peers;
 		this.netmap = new NetworkMap(this.peers.values());
 		networkStatus = NetStatus.GOOD;
+		netmapManager = new NetworkMapManager(this.netmap,this.messageService);
 	}
 	public void setLocalID(int ID){
 		localID =ID;

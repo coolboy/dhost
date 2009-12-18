@@ -202,7 +202,7 @@ public class MessageService
 		// for debugging what state data is being pushed around..
 		// TODO: need a debug flag to shut this noise off!
 		if (message.getPayload().length() > 0)
-			System.out.println("received " + message.toString());
+			//System.out.println("received " + message.toString());
 		
 		if (message.getDestinationPeerID() != myID)
 			System.out.println("Error: received message for wrong peer!");
