@@ -179,7 +179,7 @@ public class MessageService
 		// Deliver the message to all subscribers of the correct type
 		for (MessageSubscriber s : _subscribers)
 		{
-			if (s.getType() == message.getType())
+			if (s.subscribesToType(message.getType()))
 				s.deliver(message);
 		}
 		
