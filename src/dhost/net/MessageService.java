@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class MessageService
 	private String statsServerIP;
 	private int statsServerPort;
 	private int messageDelay;
+	private DatagramSocket socket;
 	
 	// Message send retry options
 	private static final int MAXRETRY = 7;
@@ -35,6 +38,12 @@ public class MessageService
 		
 		// Instantiate socket server
 		ms = new MessageServer(myPort,this);
+		try{
+		socket = new DatagramSocket();
+		}
+		catch(Exception e){
+			System.out.println("Datagram socket creation failed.");
+		}
 		new Thread(ms).start();
 	}
 	
@@ -55,7 +64,18 @@ public class MessageService
 		Peer destPeer = peers.get(message.getDestinationPeerID());
 		InetAddress destAddr = destPeer.getAddr();
 		int destPort = destPeer.getPort();
+		byte[] payload = message.encodeWireFormat().getBytes();
+		byte[] buf =  new byte[payload.length];
+		DatagramPacket packet = new DatagramPacket(buf,payload.length,destAddr,destPort);
+		packet.setData(payload);
+		try{
+			socket.send(packet);
+		}
+		catch(Exception e){
+			System.out.println("packet sending failed.");
+		}
 		
+		/*
 		PrintWriter output = null;
 
 		// Optional delay (we use this for debugging / watching output)
@@ -116,7 +136,7 @@ public class MessageService
 		{
 			System.out.println("Send Error: Failed to send message after " +
 					MAXRETRY + " retries.");
-		}
+		}*/
 		
 		return sendSuccess;
 	}
