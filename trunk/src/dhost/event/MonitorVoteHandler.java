@@ -24,6 +24,11 @@ public class MonitorVoteHandler implements MessageSubscriber, Runnable{
 	EventHandler localEventHandler;
 	private MessageType SUBSCRIPTION_TYPE1 = MessageType.VOTE;
 	private MessageType SUBSCRIPTION_TYPE2 = MessageType.VOTE_ACK;
+	private int localVotesCommitted;
+	private int votesReceived;
+	private int voteAcksSent;
+	private int votesSent;
+	private int voteAcksReceived;
 	private HashMap<String,Event> eventMap;
 	private LinkedList<Vote> voteConfirmQueue;
 	private LinkedList<Vote> voteAckQueue;
@@ -37,6 +42,9 @@ public class MonitorVoteHandler implements MessageSubscriber, Runnable{
 		voteConfirmQueue = new LinkedList<Vote>();
 		voteAckQueue = new LinkedList<Vote>();
 		m.subscribe(this);
+		localVotesCommitted=0;
+		voteAcksSent=0;
+		votesSent = 0;
 		new Thread(this).start();
 	}
 	
@@ -103,6 +111,7 @@ public class MonitorVoteHandler implements MessageSubscriber, Runnable{
 					boolean containedVote = false;
 					for(Vote v: voteConfirmQueue){
 						if(v.getVoteID().equals(newVote.getVoteID())){
+							localVotesCommitted++;
 							propagater.propagate(event);
 							if(localEventHandler!=null){
 								localEventHandler.handleEvent(event);		
@@ -135,9 +144,11 @@ public class MonitorVoteHandler implements MessageSubscriber, Runnable{
 					eventMap.put(newVote.getVoteID(),event);				
 					voteAckQueue.add(newVote);
 				}
-				System.out.println("done handling vote from local client: "+newVote.getVoteID());
+				votesSent++;
+				//System.out.println("done handling vote from local client: "+newVote.getVoteID());
 			}
 		}
+		messageService.sendStat(2,0);
 	}
 	
 	public void deliver(NetworkMessage message){
@@ -155,6 +166,9 @@ public class MonitorVoteHandler implements MessageSubscriber, Runnable{
 				for(Vote v: voteConfirmQueue){
 					if(v.getVoteID().equals(voteID)){
 						if(eventMap.containsKey(voteID)){
+							localVotesCommitted++;
+							votesReceived++;
+							voteAcksSent++;
 							propagater.propagate(eventMap.get(voteID));
 							if(localEventHandler!=null){
 								localEventHandler.handleEvent(eventMap.get(voteID));		
@@ -176,10 +190,11 @@ public class MonitorVoteHandler implements MessageSubscriber, Runnable{
 			}
 		}
 		else if(message.getType()==MessageType.VOTE_ACK){
-			System.out.println("rcvd voteACK: "+ message.getPayload());
+	
 			synchronized(this){
 				for(Vote v: voteAckQueue){
 					if(v.getVoteID().equals(message.getPayload())){
+						voteAcksReceived++;
 						voteAckQueue.remove(v);
 						eventMap.remove(v.getVoteID());
 						break;
@@ -195,5 +210,11 @@ public class MonitorVoteHandler implements MessageSubscriber, Runnable{
 		String voteHash = monitorEvent.getAppEvent().getVoteHash();
 		return ""+originalEvent.toString()+voteHash;
 		
+	}
+	
+	public String getStatus(){
+		return "Local votes committed: "+localVotesCommitted + "  Votes Recieved: "+
+			votesReceived + " Vote Acks Sent: "+ voteAcksSent+"\n Votes Sent: "+votesSent+
+			" Vote Acks Received: "+ voteAcksReceived+"\n";
 	}
 }
