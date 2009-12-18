@@ -184,4 +184,7 @@ public class DemoGameEvent implements AppEvent
 	public Integer getObjectThreeID() {
 		return objectThreeID;
 	}
+	public String getVoteHash(){
+		return ""+gameEventType+""+objectOneID+""+objectTwoID+""+objectThreeID;
+	}
 }

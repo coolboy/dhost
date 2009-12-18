@@ -47,10 +47,12 @@ public class DemoGameEventMonitor implements EventMonitor {
 
 	}
 	
+	//the first event, of the generic event type, is the event that was being monitored
+	//and caused the second event, of DemoGameEventType
 	public void handleEventFromMonitor(Event event,DemoGameEvent dGameEvent){
 		Event voteEvent = new Event(propagater.getLocalID());
 		voteEvent.setAppEvent(dGameEvent);
-		monitorVoteHandler.handleVote(event.getMonitors(), voteEvent);
+		monitorVoteHandler.handleVote(event, voteEvent);
 		
 	}
 
