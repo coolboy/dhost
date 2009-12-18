@@ -14,5 +14,7 @@ public interface AppEvent
 	//so event IDs are allowed to collide
 	public Integer getEventID();
 	public double getMonitorWeight();
+	public String getVoteHash();
+	
 								
 }

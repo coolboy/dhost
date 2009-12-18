@@ -99,8 +99,8 @@ public class Updater implements MessageSubscriber
 	}
 
 	@Override
-	public MessageType getType() {
-		return SUBSCRIPTION_TYPE;
+	public boolean subscribesToType(MessageType type) {
+		return type==SUBSCRIPTION_TYPE;
 	}
 
 }

@@ -135,6 +135,10 @@ public class Event
 	public void setOriginID(Integer originID) {
 		this.originID = originID;
 	}
+	
+	public Integer getEventID(){
+		return eventID;
+	}
 
 
 	public void setMonitors(ArrayList<Integer> monitors) {
