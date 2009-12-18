@@ -44,9 +44,9 @@ public class DemoGameApp implements GameApp{
 	// Generate random move (for use by simulator)
 	public void doRandomMove(){
 		Random rand = new Random();
-		int xpos = rand.nextInt()%500;
-		int ypos = rand.nextInt()%500;
-		if(rand.nextInt()%1000<500){
+		int xpos = rand.nextInt(700);
+		int ypos = rand.nextInt(500);
+		if(rand.nextInt(1000)<800){
 			gController.mouseButton1(new Point2D.Double(xpos,ypos));
 		}
 		else{
