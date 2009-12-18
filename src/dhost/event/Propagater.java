@@ -29,6 +29,9 @@ public class Propagater implements MessageSubscriber
 	private Vector<PeerWeightTotal> monitorWeightTotals;
 	private HashMap<Integer,PeerWeightTotal> peerWeightMap;
 	private Random rand;
+	private int totalSystemEventsSeen;
+	private double aggregateSystemEventWeight;
+	
 
 	NetworkState netstate; // used to get info about current network status
 	
@@ -44,6 +47,9 @@ public class Propagater implements MessageSubscriber
 		peerWeightMap = new HashMap<Integer, PeerWeightTotal>();
 		ArrayList<Integer> peerIDs = netstate.getAllPeerIDs();
 		PeerWeightTotal  p;
+
+		aggregateSystemEventWeight = 0;
+		totalSystemEventsSeen = 0;
 		for(int i: peerIDs){
 			p = new PeerWeightTotal(i);
 			monitorWeightTotals.add(p);
@@ -54,8 +60,7 @@ public class Propagater implements MessageSubscriber
 	// used by client to originate an event out to the network
 	public boolean propagate(Event evt)
 	{
-		//if (evt.needsMonitor())
-		//{
+		
 			// do our algorithm to determine who gets monitors, then set this
 			// value in the event..
 			//just set monitors for all events. if they have a monitor
@@ -64,7 +69,7 @@ public class Propagater implements MessageSubscriber
 			evt.setMonitors(assignMonitors(evt.getMonitorWeight()));
 			if (evt.getPeerMonitorResponsibility(myID))
 			{
-				System.out.println("telling local peer to monitor");
+				//System.out.println("telling local peer to monitor");
 				if(localEventMonitor!=null){
 					localEventMonitor.monitorEvent(evt);
 				}
@@ -73,9 +78,8 @@ public class Propagater implements MessageSubscriber
 				}
 				
 			}
-		//}
-		//else evt.setMonitors(new ArrayList<Integer>());
-		
+			aggregateSystemEventWeight+=evt.getMonitorWeight();
+			 totalSystemEventsSeen++;
 		
 			Vector<Integer> forwardingVector = netstate.getBroadcastDestinationVector(
 					myID, myID, myID);
@@ -131,7 +135,6 @@ public class Propagater implements MessageSubscriber
 			}
 			Collections.sort(monitorWeightTotals);
 		}
-		System.out.println(monitorWeightTotals);
 		
 		return monitors;
 	}
@@ -139,6 +142,8 @@ public class Propagater implements MessageSubscriber
 	// handle incoming events
 	private boolean receiveEvent(Event evt)
 	{
+		aggregateSystemEventWeight+=evt.getMonitorWeight();
+		 totalSystemEventsSeen++;
 		// do local stuff with the event
 		if(localEventHandler!=null){
 			localEventHandler.handleEvent(evt);
@@ -150,6 +155,9 @@ public class Propagater implements MessageSubscriber
 		{
 			if(localEventMonitor!=null){
 				localEventMonitor.monitorEvent(evt);
+				if(evt.getMonitorWeight()>0){
+					msgService.sendStat(1,0);
+				}
 			}
 			else{
 				System.out.println("Error: Propogator's localEventMonitor never initialized.");
@@ -215,5 +223,28 @@ public class Propagater implements MessageSubscriber
 	
 	public int getLocalID(){
 		return myID;
+		
+	}
+	public int getTotalSystemEvents(){
+		return totalSystemEventsSeen;
+	}
+	public double getSystemEventWeight(){
+		return aggregateSystemEventWeight;
+	}
+	public Vector<PeerWeightTotal> getMonitorWeightTotals(){
+		Vector<PeerWeightTotal> returnVect = new Vector<PeerWeightTotal>();
+		returnVect.addAll(monitorWeightTotals);
+		return returnVect;
+	}
+	public String getStatus(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Total system events seen: "+totalSystemEventsSeen+"\n");
+		sb.append("Total system event monitor weight generated: "+aggregateSystemEventWeight+"\n" );
+		sb.append("Event weight distribution by peer ID: \n");
+		sb.append(monitorWeightTotals.toString()+"\n");
+		sb.append("VoteHandler status:\n");
+		sb.append(monitorVoteHandler.getStatus()+"\n");
+		sb.append(localEventHandler.getStatus());
+		return sb.toString();
 	}
 }
