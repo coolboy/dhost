@@ -37,7 +37,7 @@ public class ProjectileCollisionMonitor implements Runnable{
 					for(PeerAvatar p: players.values()){
 						if(!p.getID().equals(myProjectile.getParentID())){
 							if(p.intersects(myProjectile.getRectangle2D())){
-								System.out.println("collision detected");
+								//System.out.println("collision detected");
 								DemoGameEvent dGameEvent = new DemoGameEvent();
 								dGameEvent.setAsCollisionEvent(myProjectile.getParentID(),0,myProjectile.getID(),
 										p.getID());

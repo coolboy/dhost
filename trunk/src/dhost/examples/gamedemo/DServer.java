@@ -109,4 +109,7 @@ public class DServer implements EventHandler
 		}
 	}
 	*/
+	public String getStatus(){
+		return gController.getStatus();
+	}
 }

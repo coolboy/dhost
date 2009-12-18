@@ -29,7 +29,7 @@ public class DemoGameEventMonitor implements EventMonitor {
 		DemoGameEvent dge = null;
 		
 		// Unpack the DemoGameEvent from the general Event, then process
-		System.out.println("Monitoring event");
+		//System.out.println("Monitoring event");
 		AppEvent ae = event.getAppEvent();
 		if (ae instanceof DemoGameEvent)
 		{

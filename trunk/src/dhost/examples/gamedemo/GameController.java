@@ -2,12 +2,16 @@ package dhost.examples.gamedemo;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GameController
 {
     private GameStateManager gameStateManager;
     private DServer dServer;
 	private GamePanel gPanel;
+	private HashMap<Integer, Integer> hitStatsMap;
+	private int[] hitStats;
     private final int defaultWidth = 800;
     private final int defaultHeight = 600;
 	@SuppressWarnings("unused")
@@ -21,6 +25,7 @@ public class GameController
 		gPanel = new GamePanel(new MouseEventHandler(this),
 				gameStateManager, defaultWidth, defaultHeight);
 		currentEventID = 1;
+		
 		paused = false;
 	}
 	
@@ -72,7 +77,7 @@ public class GameController
    	 			thisEventID = currentEventID;
    	 			currentEventID++;
    	 		}
-			System.out.println("Mouse event handled");
+			//System.out.println("Mouse event handled");
 			synchronized(gameStateManager){
 				if(gameStateManager.containsPeerAvatar(localAvatarID)){
 					parentPosition = gameStateManager.getPeerAvatar(localAvatarID).getPosition();
@@ -113,7 +118,12 @@ public class GameController
 	{
 		if (!projectileParentID.equals(peerID))
 		{
-			gameStateManager.killPeer(peerID);
+			//gameStateManager.killPeer(peerID);
+			int index = hitStatsMap.get(peerID);
+			int currVal = hitStats[index];
+			currVal++;
+			hitStats[index] = currVal;
+			
 			gameStateManager.killProjectile(projectileParentID,projectileID);
 		}
 	}
@@ -126,6 +136,16 @@ public class GameController
 	public GamePanel getGamePanel()
 	{
 		return gPanel;
+	}
+	public void initHitStatsMap(ArrayList<Integer> peerIDs){
+		hitStatsMap = new HashMap<Integer, Integer>();
+		hitStats = new int[peerIDs.size()];
+		int i = 0;
+		for(Integer peer: peerIDs){
+			hitStats[i]=0;
+			hitStatsMap.put(peer, i);
+			i++;
+		}
 	}
 
 	public void handleEventFromServer(DemoGameEvent event)
@@ -146,5 +166,18 @@ public class GameController
 					event.getObjectOneID(), event.getObjectTwoID());
 		}
 
+	}
+	
+	public String getStatus(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("Peer projectile hit data:\n");
+		int index;
+		int hits;
+		for(Integer peerID: hitStatsMap.keySet()){
+			index = hitStatsMap.get(peerID);
+			hits = hitStats[index];
+			sb.append("PeerID "+peerID+" has been hit "+hits+"times.\n");
+		}
+		return sb.toString();
 	}
 }
